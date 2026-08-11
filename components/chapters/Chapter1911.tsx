@@ -87,8 +87,8 @@ export default function Chapter1911() {
         <TextureBg src="/images/mist.webp" className="z-[1] opacity-30 mix-blend-overlay" />
 
         {/* symbolic ship sailing across the lower frame */}
-        <div className="ship-svg will-transform pointer-events-none absolute bottom-[20vh] left-1/2 z-[2] w-[32vw] max-w-[420px] -translate-x-1/2 opacity-80">
-          <Ship className="h-auto w-full drop-shadow-[0_10px_30px_rgba(0,0,0,0.6)]" />
+        <div className="ship-svg will-transform pointer-events-none absolute bottom-[22vh] left-1/2 z-[2] w-[26vw] max-w-[340px] -translate-x-1/2">
+          <Ship className="h-auto w-full" />
         </div>
 
         {/* year, faint behind */}

@@ -51,19 +51,12 @@ const Ship = forwardRef<SVGSVGElement, { className?: string }>(function Ship(
         <circle cx="290" cy="150" r="4" />
       </g>
 
-      {/* water line */}
+      {/* short water line, tucked under the hull only */}
       <path
-        d="M0 178 Q 60 170 120 178 T 240 178 T 420 178"
+        d="M60 182 Q 210 176 360 182"
         fill="none"
         stroke="#D4A72C"
-        strokeOpacity="0.35"
-        strokeWidth="1.5"
-      />
-      <path
-        d="M0 192 Q 70 184 140 192 T 280 192 T 420 192"
-        fill="none"
-        stroke="#D4A72C"
-        strokeOpacity="0.2"
+        strokeOpacity="0.3"
         strokeWidth="1.5"
       />
     </svg>

@@ -2,7 +2,6 @@
 
 import { useRef } from 'react';
 import { gsap, useGSAP } from '@/lib/gsap';
-import LotusFlower from '@/components/objects/LotusFlower';
 import TextureBg from '@/components/TextureBg';
 
 const PLACES = ['Kim Liên', 'Nam Đàn', 'Nghệ An'];
@@ -13,24 +12,6 @@ export default function Chapter1890() {
   useGSAP(
     () => {
       const q = gsap.utils.selector(root);
-
-      // lotus scrubbed bloom (kept small so it never covers the year)
-      gsap.fromTo(
-        q('.lotus'),
-        { scale: 0.72, rotate: 0, y: 50 },
-        {
-          scale: 1,
-          rotate: 10,
-          y: 0,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: root.current,
-            start: 'top top',
-            end: 'bottom bottom',
-            scrub: 1,
-          },
-        }
-      );
 
       // Làng Sen backdrop drifts gently (parallax)
       gsap.fromTo(
@@ -114,11 +95,6 @@ export default function Chapter1890() {
         <p className="eyebrow relative z-10 mb-6 text-vn-gold-antique">Chương 01</p>
 
         <h2 className="headline-year relative z-10 text-vn-ivory">1890</h2>
-
-        {/* lotus — a small emblem low behind the title (never over the year) */}
-        <div className="lotus will-transform pointer-events-none absolute left-1/2 top-[62%] z-[2] -translate-x-1/2 -translate-y-1/2">
-          <LotusFlower className="h-[24vh] w-auto opacity-70" />
-        </div>
 
         <h3 className="font-display relative z-10 mt-4 text-4xl font-semibold uppercase tracking-[0.2em] text-vn-ivory md:text-6xl">
           Từ Làng Sen

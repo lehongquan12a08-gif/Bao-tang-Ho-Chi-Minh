@@ -4,6 +4,7 @@ import { useRef } from 'react';
 import { gsap, useGSAP } from '@/lib/gsap';
 import GoldStar from '@/components/objects/GoldStar';
 import TextureBg from '@/components/TextureBg';
+import Portrait from '@/components/Portrait';
 
 /**
  * HERO — the cinematic entry. A ~360vh scroll surface with a pinned (sticky)
@@ -32,7 +33,6 @@ export default function Hero() {
       // --- Phase 1 : depth & light ---------------------------------------
       tl.to(q('.hero-portrait'), { scale: 1.08, yPercent: -3, ease: 'none' }, 0)
         .to(q('.hero-star'), { rotate: 16, scale: 1.15, ease: 'none' }, 0)
-        .to(q('.hero-eyebrow'), { opacity: 0, y: -20, ease: 'none' }, 0.04)
         .to(q('.hero-scrollhint'), { opacity: 0, ease: 'none' }, 0.12);
 
       // --- Phase 2 : title + portrait recede -----------------------------
@@ -76,13 +76,8 @@ export default function Hero() {
         </div>
 
         {/* portrait — historical photograph, sits in the upper stage */}
-        <div className="hero-portrait will-transform absolute left-1/2 top-[6vh] z-10 -translate-x-1/2">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/images/photos/portrait.webp"
-            alt="Chân dung Chủ tịch Hồ Chí Minh"
-            className="photo-cine portrait-mask h-[64vh] w-auto object-contain"
-          />
+        <div className="hero-portrait will-transform absolute left-1/2 top-[7vh] z-10 -translate-x-1/2">
+          <Portrait heightClass="h-[62vh]" />
         </div>
 
         {/* bottom scrim so the title always stays legible over the portrait */}
@@ -98,13 +93,6 @@ export default function Hero() {
           </p>
           <p className="mt-3 max-w-xl px-6 font-body text-[12px] font-light uppercase leading-relaxed tracking-[0.24em] text-vn-ivory/65 md:text-sm">
             Hành trình của một con người gắn với hành trình của dân tộc
-          </p>
-        </div>
-
-        {/* eyebrow (top) */}
-        <div className="hero-eyebrow pointer-events-none absolute inset-x-0 top-[14vh] z-40 flex justify-center">
-          <p className="eyebrow text-vn-gold-antique">
-            Triển lãm số · Hành trình một cuộc đời
           </p>
         </div>
 

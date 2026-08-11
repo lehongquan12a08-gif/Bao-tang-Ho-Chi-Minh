@@ -4,6 +4,7 @@ import { useRef } from 'react';
 import { gsap, useGSAP } from '@/lib/gsap';
 import GoldStar from '@/components/objects/GoldStar';
 import TextureBg from '@/components/TextureBg';
+import Portrait from '@/components/Portrait';
 
 export default function FinalSection() {
   const root = useRef<HTMLDivElement>(null);
@@ -42,12 +43,7 @@ export default function FinalSection() {
 
       <div className="relative z-10 flex flex-col items-center">
         <div className="final-portrait will-transform flex flex-col items-center">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/images/photos/portrait.webp"
-            alt="Chân dung Chủ tịch Hồ Chí Minh"
-            className="photo-cine portrait-mask h-[58vh] w-auto object-contain"
-          />
+          <Portrait heightClass="h-[62vh]" />
         </div>
         <h2 className="final-name will-transform headline-mega mt-2 text-vn-ivory text-glow-gold">
           HỒ CHÍ MINH
