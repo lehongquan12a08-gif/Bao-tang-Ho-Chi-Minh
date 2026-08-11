@@ -35,12 +35,12 @@ export default function Hero() {
         .to(q('.hero-star'), { rotate: 16, scale: 1.15, ease: 'none' }, 0)
         .to(q('.hero-scrollhint'), { opacity: 0, ease: 'none' }, 0.12);
 
-      // --- Phase 2 : title + portrait recede -----------------------------
-      tl.to(q('.hero-title'), { scale: 1.06, opacity: 0, y: -30, ease: 'none' }, 0.34)
-        .to(q('.hero-portrait'), { opacity: 0, scale: 1.12, ease: 'none' }, 0.42);
+      // --- Phase 2 : title + portrait recede QUICKLY (fully gone by ~0.5) -
+      tl.to(q('.hero-title'), { scale: 1.06, opacity: 0, y: -30, ease: 'none', duration: 0.18 }, 0.3)
+        .to(q('.hero-portrait'), { opacity: 0, scale: 1.12, ease: 'power2.in', duration: 0.16 }, 0.34);
 
-      // --- Phase 3 : dive through the star -------------------------------
-      tl.to(q('.hero-star'), { scale: 9, rotate: 24, ease: 'power1.in' }, 0.58)
+      // --- Phase 3 : dive through the star (only AFTER the face is gone) --
+      tl.to(q('.hero-star'), { scale: 9, rotate: 24, ease: 'power1.in' }, 0.54)
         .to(
           q('.hero-bg'),
           {
@@ -48,7 +48,7 @@ export default function Hero() {
               'radial-gradient(ellipse at center, #DA251D 0%, #8F1713 55%, #080808 100%)',
             ease: 'none',
           },
-          0.55
+          0.58
         )
         .to(q('.hero-redwash'), { opacity: 1, ease: 'power2.in' }, 0.82);
     },

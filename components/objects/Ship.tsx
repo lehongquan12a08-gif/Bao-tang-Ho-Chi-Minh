@@ -10,7 +10,7 @@ const Ship = forwardRef<SVGSVGElement, { className?: string }>(function Ship(
   ref
 ) {
   return (
-    <svg ref={ref} viewBox="0 0 420 220" className={className} aria-hidden="true">
+    <svg ref={ref} viewBox="0 0 420 176" className={className} aria-hidden="true">
       <defs>
         <linearGradient id="hull" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="#3a2a1c" />
@@ -51,14 +51,6 @@ const Ship = forwardRef<SVGSVGElement, { className?: string }>(function Ship(
         <circle cx="290" cy="150" r="4" />
       </g>
 
-      {/* short water line, tucked under the hull only */}
-      <path
-        d="M60 182 Q 210 176 360 182"
-        fill="none"
-        stroke="#D4A72C"
-        strokeOpacity="0.3"
-        strokeWidth="1.5"
-      />
     </svg>
   );
 });

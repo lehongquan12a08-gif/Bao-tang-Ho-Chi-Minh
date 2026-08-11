@@ -30,11 +30,11 @@ export default function Chapter1911() {
         0
       );
 
-      // the ship sails across the lower frame
+      // the ship sails ALONG the journey line (centred base at -50%)
       tl.fromTo(
         q('.ship-svg'),
-        { xPercent: -70 },
-        { xPercent: 70, ease: 'none' },
+        { xPercent: -86 },
+        { xPercent: -14, ease: 'none' },
         0
       );
 
@@ -86,11 +86,6 @@ export default function Chapter1911() {
         {/* original harbour-mist texture (generated asset) */}
         <TextureBg src="/images/mist.webp" className="z-[1] opacity-30 mix-blend-overlay" />
 
-        {/* symbolic ship sailing across the lower frame */}
-        <div className="ship-svg will-transform pointer-events-none absolute bottom-[22vh] left-1/2 z-[2] w-[26vw] max-w-[340px] -translate-x-1/2">
-          <Ship className="h-auto w-full" />
-        </div>
-
         {/* year, faint behind */}
         <h2 className="headline-year pointer-events-none absolute top-[8%] z-[2] text-white/[0.08]">
           1911
@@ -105,10 +100,14 @@ export default function Chapter1911() {
           <span className="w-cuu will-transform headline-mega text-vn-ivory text-glow-gold">CỨU NƯỚC</span>
         </div>
 
-        {/* symbolic horizontal journey */}
-        <div className="absolute bottom-[12vh] z-20 flex w-full max-w-3xl flex-col items-center px-8">
+        {/* symbolic horizontal journey — the ship sails along this gold line */}
+        <div className="absolute bottom-[15vh] z-20 flex w-full max-w-3xl flex-col items-center px-8">
           <div className="relative h-px w-full bg-white/15">
             <div className="journey-fill absolute inset-y-0 left-0 w-full origin-left bg-vn-gold-antique" />
+            {/* ship sits ON the line */}
+            <div className="ship-svg will-transform pointer-events-none absolute bottom-0 left-1/2 z-10 w-[22vw] max-w-[260px]">
+              <Ship className="h-auto w-full" />
+            </div>
           </div>
           <div className="mt-4 flex w-full items-center justify-between">
             {STOPS.map((s) => (
