@@ -5,6 +5,7 @@ import { NAV_LINKS } from '@/data/timeline';
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -13,27 +14,37 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  // Lock body scroll while the mobile menu is open.
+  useEffect(() => {
+    document.body.style.overflow = open ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [open]);
+
   return (
     <nav
       className={[
         'fixed inset-x-0 top-0 z-[100] transition-all duration-500',
-        scrolled
+        scrolled || open
           ? 'bg-[rgba(8,8,8,0.65)] backdrop-blur-[12px] border-b border-white/[0.08]'
           : 'bg-transparent border-b border-transparent',
       ].join(' ')}
     >
-      <div className="mx-auto flex max-w-[1600px] items-center justify-between px-6 py-4 md:px-10">
+      <div className="mx-auto flex max-w-[1600px] items-center justify-between px-5 py-4 md:px-10">
         <a
           href="#hero"
-          className="group flex items-center gap-3"
+          className="group flex items-center gap-2.5"
           aria-label="Về đầu trang"
+          onClick={() => setOpen(false)}
         >
           <span className="inline-block h-2 w-2 rotate-45 bg-vn-gold transition-transform duration-500 group-hover:rotate-[135deg]" />
-          <span className="font-display text-[15px] font-semibold uppercase tracking-[0.28em] text-vn-ivory md:text-[16px]">
+          <span className="font-display text-[12.5px] font-semibold uppercase tracking-[0.16em] text-vn-ivory sm:text-[15px] sm:tracking-[0.28em]">
             Hành trình theo chân Bác
           </span>
         </a>
 
+        {/* desktop links */}
         <ul className="hidden items-center gap-9 md:flex">
           {NAV_LINKS.map((link) => (
             <li key={link.href}>
@@ -47,6 +58,60 @@ export default function Navbar() {
             </li>
           ))}
         </ul>
+
+        {/* mobile hamburger */}
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-label={open ? 'Đóng menu' : 'Mở menu'}
+          aria-expanded={open}
+          className="relative z-[110] flex h-9 w-9 flex-col items-center justify-center gap-[5px] md:hidden"
+        >
+          <span
+            className={[
+              'block h-[1.5px] w-6 bg-vn-ivory transition-all duration-300',
+              open ? 'translate-y-[6.5px] rotate-45' : '',
+            ].join(' ')}
+          />
+          <span
+            className={[
+              'block h-[1.5px] w-6 bg-vn-ivory transition-all duration-300',
+              open ? 'opacity-0' : 'opacity-100',
+            ].join(' ')}
+          />
+          <span
+            className={[
+              'block h-[1.5px] w-6 bg-vn-ivory transition-all duration-300',
+              open ? '-translate-y-[6.5px] -rotate-45' : '',
+            ].join(' ')}
+          />
+        </button>
+      </div>
+
+      {/* mobile overlay menu */}
+      <div
+        className={[
+          'fixed inset-0 z-[105] flex flex-col items-center justify-center gap-8 bg-[rgba(8,8,8,0.96)] backdrop-blur-md transition-all duration-500 md:hidden',
+          open ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0',
+        ].join(' ')}
+      >
+        {NAV_LINKS.map((link, i) => (
+          <a
+            key={link.href}
+            href={link.href}
+            onClick={() => setOpen(false)}
+            className="font-display text-2xl uppercase tracking-[0.22em] text-vn-ivory/90 transition-colors duration-300 hover:text-vn-gold"
+            style={{
+              transitionDelay: open ? `${100 + i * 60}ms` : '0ms',
+              transform: open ? 'translateY(0)' : 'translateY(14px)',
+              opacity: open ? 1 : 0,
+            }}
+          >
+            {link.label}
+          </a>
+        ))}
+        <span className="mt-6 h-px w-16 bg-vn-gold-antique/50" />
+        <p className="eyebrow text-vn-gold-antique">1890 — 1969</p>
       </div>
     </nav>
   );

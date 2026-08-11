@@ -87,13 +87,14 @@ html.lenis body {
 
 @media (max-width: 767px) {
   .headline-mega {
-    font-size: clamp(44px, 16vw, 90px);
+    font-size: clamp(38px, 13vw, 84px);
   }
   .headline-year {
-    font-size: clamp(72px, 30vw, 150px);
+    font-size: clamp(66px, 27vw, 140px);
   }
   .eyebrow {
-    letter-spacing: 0.25em;
+    letter-spacing: 0.22em;
+    font-size: 10px;
   }
 }
 
