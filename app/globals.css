@@ -1,0 +1,243 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ========================================================================
+   HÀNH TRÌNH THEO CHÂN BÁC — global cinematic layer
+   ======================================================================== */
+
+:root {
+  --vn-red: #da251d;
+  --vn-red-deep: #8f1713;
+  --vn-gold: #ffcd00;
+  --vn-gold-antique: #d4a72c;
+  --vn-ivory: #f4ebd8;
+  --vn-brown: #6a4932;
+  --vn-charcoal: #11100e;
+  --vn-black: #080808;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  margin: 0;
+  background-color: var(--vn-black);
+  color: var(--vn-ivory);
+  font-family: var(--font-be-vietnam), system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Lenis smooth-scroll base */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+::selection {
+  background: var(--vn-red);
+  color: var(--vn-ivory);
+}
+
+/* ------------------------------------------------------------------ */
+/*  Typography helpers                                                 */
+/* ------------------------------------------------------------------ */
+.font-display {
+  font-family: var(--font-cormorant), 'Cormorant Garamond', serif;
+}
+.font-serif-hist {
+  font-family: var(--font-playfair), 'Playfair Display', serif;
+}
+
+.headline-mega {
+  font-family: var(--font-cormorant), 'Cormorant Garamond', serif;
+  font-weight: 600;
+  line-height: 0.9;
+  letter-spacing: -0.01em;
+  font-size: clamp(72px, 10vw, 190px);
+}
+
+.headline-year {
+  font-family: var(--font-playfair), 'Playfair Display', serif;
+  font-weight: 700;
+  line-height: 0.85;
+  font-size: clamp(90px, 18vw, 340px);
+  letter-spacing: -0.02em;
+}
+
+.eyebrow {
+  font-family: var(--font-be-vietnam), sans-serif;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.35em;
+  font-size: clamp(11px, 0.9vw, 13px);
+}
+
+@media (max-width: 767px) {
+  .headline-mega {
+    font-size: clamp(44px, 16vw, 90px);
+  }
+  .headline-year {
+    font-size: clamp(72px, 30vw, 150px);
+  }
+  .eyebrow {
+    letter-spacing: 0.25em;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Reusable atmospheric utilities                                    */
+/* ------------------------------------------------------------------ */
+.text-glow-gold {
+  text-shadow: 0 0 40px rgba(255, 205, 0, 0.35), 0 0 12px rgba(255, 205, 0, 0.2);
+}
+
+.vignette::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 45%,
+    rgba(0, 0, 0, 0.55) 100%
+  );
+}
+
+.gold-line {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--vn-gold-antique),
+    transparent
+  );
+}
+
+/* Historical photo treatment: use on <img> so archival images blend in. */
+.archival {
+  filter: grayscale(1) contrast(1.15) brightness(0.9);
+  mix-blend-mode: screen;
+  -webkit-mask-image: radial-gradient(
+    ellipse at center,
+    black 55%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(ellipse at center, black 55%, transparent 100%);
+}
+
+/* Cinematic grade for real photographs (keeps colour, adds depth). */
+.photo-cine {
+  filter: contrast(1.08) saturate(0.82) brightness(0.96);
+}
+
+/* Portrait dissolving into darkness — for Hero / Final centrepiece. */
+.portrait-mask {
+  -webkit-mask-image: radial-gradient(
+    ellipse 60% 72% at 50% 40%,
+    #000 52%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    ellipse 60% 72% at 50% 40%,
+    #000 52%,
+    transparent 100%
+  );
+}
+
+/* Soft-edged framed scene photo (no hard rectangle / no rounded card). */
+.edge-fade {
+  -webkit-mask-image: radial-gradient(
+    ellipse at center,
+    #000 58%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(ellipse at center, #000 58%, transparent 100%);
+}
+
+/* ------------------------------------------------------------------ */
+/*  Film grain overlay (fixed, non-interactive)                       */
+/* ------------------------------------------------------------------ */
+.film-grain {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.045;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grain-shift 0.6s steps(3) infinite;
+}
+
+.film-vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 60%,
+    rgba(0, 0, 0, 0.45) 100%
+  );
+}
+
+@keyframes grain-shift {
+  0% { transform: translate(0, 0); }
+  33% { transform: translate(-2%, 1%); }
+  66% { transform: translate(1%, -2%); }
+  100% { transform: translate(0, 0); }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Scroll hint                                                        */
+/* ------------------------------------------------------------------ */
+.scroll-hint-line {
+  width: 1px;
+  height: 54px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    var(--vn-gold-antique)
+  );
+  transform-origin: top;
+  animation: scroll-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes scroll-pulse {
+  0%, 100% { transform: scaleY(0.4); opacity: 0.4; }
+  50% { transform: scaleY(1); opacity: 1; }
+}
+
+/* Star glow pulse for symbolic 3D star */
+@keyframes star-breathe {
+  0%, 100% { filter: drop-shadow(0 0 30px rgba(255, 205, 0, 0.4)); }
+  50% { filter: drop-shadow(0 0 60px rgba(255, 205, 0, 0.7)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .film-grain,
+  .scroll-hint-line {
+    animation: none;
+  }
+}
+
+/* Utility: perspective stage for 2.5D + symbolic 3D */
+.stage-3d {
+  perspective: 1400px;
+  transform-style: preserve-3d;
+}
+.will-transform {
+  will-change: transform, opacity;
+}
