@@ -142,26 +142,29 @@ function makeMountain() {
   const sr = 22050, sec = 18;
   const out = seamless(sr, sec, (g, sr) => {
     const n = g.length;
-    const low = lowpass(whiteN(n), 350, sr);      // body of the wind
-    const whistle = highpass(lowpass(whiteN(n), 1600, sr), 700, sr); // airy whistle
+    // airy mountain wind = MID/HIGH band-passed noise (no low rumble → not "waves")
+    const air = highpass(lowpass(whiteN(n), 2200, sr), 500, sr);
+    const rustle = highpass(whiteN(n), 3800, sr);                 // leaves rustling
     for (let i = 0; i < n; i++) {
       const t = i / sr;
-      const gust = 0.45 + 0.55 * (0.5 + 0.5 * Math.sin(2 * Math.PI * (1 / 7.0) * t + Math.sin(t * 0.7)));
-      g[i] = low[i] * gust * 0.9 + whistle[i] * gust * 0.25;
+      // mostly-continuous, irregular gusting (not the periodic swell of a wave)
+      const gust = 0.55 + 0.45 * (0.5 + 0.5 * Math.sin(2 * Math.PI * (1 / 5.5) * t + 1.3 * Math.sin(2 * Math.PI * (1 / 2.3) * t)));
+      g[i] = air[i] * gust * 0.75 + rustle[i] * 0.07 * (0.6 + 0.4 * Math.sin(2 * Math.PI * (1 / 1.7) * t));
     }
-    // a few soft bird chirps
-    const chirp = (start, f) => {
-      const dur = 0.13;
+    // clearer, more frequent bird calls — reads as forest, not sea
+    const chirp = (start, f, dur = 0.14) => {
       for (let i = 0; i < n; i++) {
         const t = i / sr - start; if (t < 0 || t > dur) continue;
         const env = Math.sin(Math.PI * (t / dur)) ** 2;
-        const fm = f + 400 * Math.sin(2 * Math.PI * 18 * t);
-        g[i] += 0.05 * env * Math.sin(2 * Math.PI * fm * t);
+        const fm = f + 500 * Math.sin(2 * Math.PI * 20 * t);
+        g[i] += 0.06 * env * Math.sin(2 * Math.PI * fm * t);
       }
     };
-    chirp(3.2, 2600); chirp(3.45, 3100); chirp(9.0, 2400); chirp(12.6, 2900); chirp(12.85, 3300);
+    chirp(2.0, 2800); chirp(2.25, 3200); chirp(2.45, 2600);
+    chirp(7.4, 3000); chirp(7.62, 3400);
+    chirp(11.5, 2500); chirp(13.0, 2900); chirp(13.2, 3300); chirp(13.4, 3000);
   });
-  normalize(out, 0.75);
+  normalize(out, 0.7);
   writeWav(join(OUT, 'sfx', 'mountain-1941.wav'), sr, [out]);
   console.log('✓ mountain-1941.wav');
 }
@@ -197,8 +200,7 @@ function makeCrowd() {
   console.log('✓ crowd-1945.wav');
 }
 
-makeAmbient();
-makeShip();
-makeMountain();
-makeCrowd();
+const only = process.argv[2];
+if (only === 'mountain') { makeMountain(); }
+else { makeAmbient(); makeShip(); makeMountain(); makeCrowd(); }
 console.log('Done →', OUT);
