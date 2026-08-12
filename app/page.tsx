@@ -1,6 +1,7 @@
 import Navbar from '@/components/Navbar';
 import TimelineIndicator from '@/components/TimelineIndicator';
 import AutoScrollButton from '@/components/AutoScrollButton';
+import AudioController from '@/components/AudioController';
 import Hero from '@/components/Hero';
 import Chapter1890 from '@/components/chapters/Chapter1890';
 import WordCascade from '@/components/WordCascade';
@@ -20,6 +21,7 @@ export default function Home() {
       <Navbar />
       <TimelineIndicator />
       <AutoScrollButton />
+      <AudioController />
 
       <main>
         {/* 01 · The cinematic entry */}
