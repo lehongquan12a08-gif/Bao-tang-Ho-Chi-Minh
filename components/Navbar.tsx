@@ -1,14 +1,25 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { NAV_LINKS } from '@/data/timeline';
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
+  const [hidden, setHidden] = useState(false);
   const [open, setOpen] = useState(false);
+  const lastY = useRef(0);
 
+  // Hide the bar while scrolling DOWN (so it never covers the content); reveal
+  // it near the top or when scrolling back up.
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
+    const onScroll = () => {
+      const y = window.scrollY;
+      setScrolled(y > 40);
+      if (y < 90) setHidden(false);
+      else if (y > lastY.current + 6) setHidden(true);
+      else if (y < lastY.current - 6) setHidden(false);
+      lastY.current = y;
+    };
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
@@ -25,7 +36,8 @@ export default function Navbar() {
   return (
     <nav
       className={[
-        'fixed inset-x-0 top-0 z-[100] transition-all duration-500',
+        'fixed inset-x-0 top-0 z-[100] transition-all duration-500 ease-cinematic',
+        hidden && !open ? '-translate-y-full opacity-0' : 'translate-y-0 opacity-100',
         scrolled || open
           ? 'bg-[rgba(8,8,8,0.65)] backdrop-blur-[12px] border-b border-white/[0.08]'
           : 'bg-transparent border-b border-transparent',

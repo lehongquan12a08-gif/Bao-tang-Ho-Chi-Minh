@@ -53,17 +53,15 @@ export default function Chapter1911() {
       }}
     >
       <div className="sticky top-0 flex h-screen flex-col items-center justify-center overflow-hidden">
-        {/* archival photo — starts BELOW the navbar so the man's face is never
-            hidden by it; object-position top keeps his full face in frame */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 top-[72px] z-0 overflow-hidden">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/images/photos/ship-1911.webp"
-            alt="Con tàu rời bến — hành trình ra đi tìm đường cứu nước (1911)"
-            className="ship will-transform h-full w-full object-cover"
-            style={{ filter: 'sepia(0.32) contrast(1.05) brightness(0.85)', objectPosition: 'center top' }}
-          />
-        </div>
+        {/* full-bleed archival photo — object-position top keeps the man's full
+            face in frame; the navbar auto-hides on scroll so it never covers it */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/images/photos/ship-1911.webp"
+          alt="Con tàu rời bến — hành trình ra đi tìm đường cứu nước (1911)"
+          className="ship will-transform pointer-events-none absolute inset-0 z-0 h-full w-full object-cover"
+          style={{ filter: 'sepia(0.32) contrast(1.05) brightness(0.85)', objectPosition: 'center top' }}
+        />
 
         {/* LEFT scrim only — darkens the text side, leaves the man on the right lit */}
         <div
