@@ -63,12 +63,13 @@ export default function Chapter1911() {
           style={{ filter: 'sepia(0.32) contrast(1.05) brightness(0.85)', objectPosition: 'center top' }}
         />
 
-        {/* LEFT scrim only — darkens the text side, leaves the man on the right lit */}
+        {/* vignette scrim — darker in the centre (for the text), lighter at the
+            edges so the man on the right stays lit */}
         <div
           className="pointer-events-none absolute inset-0 z-[1]"
           style={{
             background:
-              'linear-gradient(90deg, rgba(8,8,8,0.94) 0%, rgba(8,8,8,0.75) 28%, rgba(8,8,8,0.3) 52%, rgba(8,8,8,0) 74%)',
+              'radial-gradient(ellipse 75% 95% at 50% 48%, rgba(8,8,8,0.72) 0%, rgba(8,8,8,0.45) 42%, rgba(8,8,8,0.1) 72%, rgba(8,8,8,0) 100%)',
           }}
         />
         {/* soft bottom gradient so the journey line reads */}
@@ -77,13 +78,13 @@ export default function Chapter1911() {
         {/* original harbour-mist texture (generated asset) */}
         <TextureBg src="/images/mist.webp" className="z-[1] opacity-25 mix-blend-overlay" />
 
-        {/* year, faint behind the title */}
-        <h2 className="headline-year pointer-events-none absolute left-[6%] top-[14%] z-[2] text-white/[0.07]">
+        {/* year — centred watermark, a touch clearer */}
+        <h2 className="headline-year pointer-events-none absolute left-1/2 top-1/2 z-[2] -translate-x-1/2 -translate-y-1/2 text-white/[0.12]">
           1911
         </h2>
 
-        {/* headline — anchored LEFT so it never covers the man on the right */}
-        <div className="absolute left-[6%] top-1/2 z-20 flex max-w-[46vw] -translate-y-1/2 flex-col items-start gap-1 text-left">
+        {/* headline — centred */}
+        <div className="absolute left-1/2 top-1/2 z-20 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1 text-center">
           <span className="w-radi will-transform headline-mega text-vn-ivory text-glow-gold">RA ĐI</span>
           <span className="w-tim will-transform font-display text-3xl uppercase tracking-[0.3em] text-vn-gold md:text-5xl">
             Tìm đường
