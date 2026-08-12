@@ -6,13 +6,13 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 // cross-fades based on which section is in view. Drop the files listed in
 // public/audio/README.md and it plays; if a file is missing it stays silent
 // (no errors), so the site works with or without audio.
-const AMBIENT_SRC = '/audio/ambient.mp3';
-const AMBIENT_VOL = 0.2;
+const AMBIENT_SRC = '/audio/ambient.wav';
+const AMBIENT_VOL = 0.22;
 
 const SFX: { id: string; src: string; vol: number }[] = [
-  { id: 'chapter-1911', src: '/audio/sfx/ship-1911.mp3', vol: 0.3 },
-  { id: 'chapter-1941', src: '/audio/sfx/mountain-1941.mp3', vol: 0.26 },
-  { id: 'chapter-1945', src: '/audio/sfx/crowd-1945.mp3', vol: 0.22 },
+  { id: 'chapter-1911', src: '/audio/sfx/ship-1911.wav', vol: 0.3 },
+  { id: 'chapter-1941', src: '/audio/sfx/mountain-1941.wav', vol: 0.28 },
+  { id: 'chapter-1945', src: '/audio/sfx/crowd-1945.wav', vol: 0.24 },
 ];
 
 const LS_KEY = 'httcb-audio';

@@ -1,16 +1,24 @@
 # Âm thanh — Hành trình theo chân Bác
 
-Bỏ các file dưới đây vào đúng đường dẫn là web tự phát (bấm nút loa góc phải để
-bật). Thiếu file nào thì phần đó **im lặng, không lỗi** — web vẫn chạy bình thường.
+**Các file âm thanh GỐC (tự tổng hợp bằng code, an toàn bản quyền) đã có sẵn** và
+đang chạy — bấm nút loa góc phải để bật. Muốn thay bằng nhạc thật thì ghi đè đúng
+tên file. Thiếu file nào thì phần đó **im lặng, không lỗi**.
 
-## File cần có
+Sinh lại các file gốc bất cứ lúc nào: `node scripts/generate-audio.mjs`
 
-| Đường dẫn | Vai trò | Gợi ý âm |
+## File (đang dùng)
+
+| Đường dẫn | Vai trò | Nội dung hiện tại (gốc) |
 |---|---|---|
-| `public/audio/ambient.mp3` | **Nhạc nền** (loop suốt trang) | Trang nghiêm, không lời: đàn bầu / sáo / dây + drone điện ảnh. ~2–4 phút, loop mượt. |
-| `public/audio/sfx/ship-1911.mp3` | Chương **1911** | Còi tàu xa + sóng biển nhẹ (loop). |
-| `public/audio/sfx/mountain-1941.mp3` | Chương **1941** | Gió núi + chim rừng (loop). |
-| `public/audio/sfx/crowd-1945.mp3` | Chương **1945** | Đám đông rì rào rất khẽ (loop). |
+| `public/audio/ambient.wav` | **Nhạc nền** (loop suốt trang) | Pad trang nghiêm (A thứ ngũ cung), loop liền mạch 24s. |
+| `public/audio/sfx/ship-1911.wav` | Chương **1911** | Sóng biển + còi tàu. |
+| `public/audio/sfx/mountain-1941.wav` | Chương **1941** | Gió núi + chim rừng. |
+| `public/audio/sfx/crowd-1945.wav` | Chương **1945** | Đám đông rì rào khẽ. |
+
+> Thay bằng nhạc thật: ghi đè cùng tên `.wav`, HOẶC dùng `.mp3` và sửa đường dẫn
+> trong `components/AudioController.tsx`. Nguồn miễn phí bản quyền gợi ý:
+> Pixabay Music / Sound Effects (không cần ghi công), Free Music Archive (CC0/CC-BY),
+> Freesound.org (kiểm giấy phép từng file).
 
 ## Yêu cầu kỹ thuật
 - Định dạng: **`.mp3`** (tương thích mọi trình duyệt). Có thể thêm bản `.webm/opus`
