@@ -2,26 +2,26 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-// Background music (loops the whole time) + per-chapter ambience that
-// cross-fades based on which section is in view. Drop the files listed in
-// public/audio/README.md and it plays; if a file is missing it stays silent
-// (no errors), so the site works with or without audio.
+// Background music (loops) + per-chapter ambience. Some clips are `loop:false`
+// one-shots (e.g. the real Tuyên ngôn recording) that fire inside a scroll
+// `range` (fraction of the section) so they hit exactly at the right moment.
+// Drop files per public/audio/README.md; missing files stay silent (no errors).
 const AMBIENT_SRC = '/audio/ambient.wav';
 const AMBIENT_VOL = 0.22;
 
-// `loop: false` = a one-shot clip (e.g. the real Tuyên ngôn recording) that
-// plays once when the chapter is entered, instead of looping.
-const SFX: { id: string; src: string; vol: number; loop?: boolean }[] = [
+type Sfx = { id: string; src: string; vol: number; loop?: boolean; range?: [number, number] };
+const SFX: Sfx[] = [
   { id: 'chapter-1911', src: '/audio/sfx/ship-1911.wav', vol: 0.3 },
   { id: 'chapter-1941', src: '/audio/sfx/mountain-1941.wav', vol: 0.28 },
   { id: 'chapter-1945', src: '/audio/sfx/crowd-1945.wav', vol: 0.12 },
-  // Real recording of the Declaration of Independence — drop the file to enable.
-  { id: 'chapter-1945', src: '/audio/sfx/declaration-1945.mp3', vol: 0.8, loop: false },
+  // Bác đọc Tuyên ngôn — plays once when the Ba Đình scene is on screen.
+  { id: 'chapter-1945', src: '/audio/sfx/declaration-1945.mp3', vol: 0.9, loop: false, range: [0.44, 0.74] },
 ];
 
 const LS_KEY = 'httcb-audio';
+const LS_VOL = 'httcb-vol';
+const clamp = (x: number) => Math.max(0, Math.min(1, x));
 
-// smooth volume fade (also plays/pauses at the ends)
 const fades = new Map<HTMLAudioElement, number>();
 function fadeTo(el: HTMLAudioElement, target: number, ms = 900) {
   const prev = fades.get(el);
@@ -31,7 +31,7 @@ function fadeTo(el: HTMLAudioElement, target: number, ms = 900) {
   const start = performance.now();
   const tick = (t: number) => {
     const p = Math.min(1, (t - start) / ms);
-    el.volume = Math.max(0, Math.min(1, from + (target - from) * p));
+    el.volume = clamp(from + (target - from) * p);
     if (p < 1) fades.set(el, requestAnimationFrame(tick));
     else {
       fades.delete(el);
@@ -44,9 +44,14 @@ function fadeTo(el: HTMLAudioElement, target: number, ms = 900) {
 export default function AudioController() {
   const [enabled, setEnabled] = useState(false);
   const [showPrompt, setShowPrompt] = useState(false);
+  const [vol, setVol] = useState(0.8);
+
   const ambientRef = useRef<HTMLAudioElement | null>(null);
   const sfxRef = useRef<Map<string, HTMLAudioElement>>(new Map());
   const enabledRef = useRef(false);
+  const masterRef = useRef(0.8);
+  const duckRef = useRef(false);
+  const ambTargetRef = useRef(-1);
 
   // create audio elements once
   useEffect(() => {
@@ -62,9 +67,19 @@ export default function AudioController() {
       a.loop = s.loop !== false;
       a.volume = 0;
       a.preload = 'none';
-      m.set(s.src, a); // key by src so two clips can share a chapter id
+      m.set(s.src, a);
     }
     sfxRef.current = m;
+
+    let v = 0.8;
+    try {
+      const sv = localStorage.getItem(LS_VOL);
+      if (sv != null) v = clamp(parseFloat(sv));
+    } catch {
+      /* ignore */
+    }
+    masterRef.current = v;
+    setVol(v);
 
     return () => {
       amb.pause();
@@ -72,29 +87,45 @@ export default function AudioController() {
     };
   }, []);
 
-  // cross-fade to the SFX of whichever chapter is centred in the viewport
-  const applyActiveSfx = useCallback(() => {
+  // update which ambience plays, honouring scroll `range` + master volume + duck
+  const apply = useCallback(() => {
     if (!enabledRef.current) return;
+    const master = masterRef.current;
     const mid = window.innerHeight / 2;
-    let active: string | null = null;
-    for (const s of SFX) {
-      const el = document.getElementById(s.id);
-      if (!el) continue;
-      const r = el.getBoundingClientRect();
-      if (r.top <= mid && r.bottom >= mid) {
-        active = s.id;
-        break;
-      }
-    }
+    let ducking = false;
+
     for (const s of SFX) {
       const a = sfxRef.current.get(s.src);
       if (!a) continue;
-      if (active === s.id) {
-        if (s.loop === false && a.paused) a.currentTime = 0; // replay from start
-        fadeTo(a, s.vol, s.loop === false ? 400 : 1400);
+      const el = document.getElementById(s.id);
+      let active = false;
+      if (el) {
+        if (s.range) {
+          const scrollable = el.offsetHeight - window.innerHeight;
+          const scrolled = -el.getBoundingClientRect().top;
+          const p = scrollable > 0 ? scrolled / scrollable : 0;
+          active = p >= s.range[0] && p <= s.range[1];
+        } else {
+          const r = el.getBoundingClientRect();
+          active = r.top <= mid && r.bottom >= mid;
+        }
+      }
+      if (active) {
+        if (s.loop === false) {
+          ducking = true;
+          if (a.paused) a.currentTime = 0;
+        }
+        fadeTo(a, s.vol * master, s.loop === false ? 300 : 1400);
       } else {
         fadeTo(a, 0, 900);
       }
+    }
+
+    duckRef.current = ducking;
+    const ambTarget = AMBIENT_VOL * master * (ducking ? 0.3 : 1);
+    if (ambientRef.current && Math.abs(ambTarget - ambTargetRef.current) > 0.001) {
+      ambTargetRef.current = ambTarget;
+      fadeTo(ambientRef.current, ambTarget, 700);
     }
   }, []);
 
@@ -107,9 +138,9 @@ export default function AudioController() {
     } catch {
       /* ignore */
     }
-    if (ambientRef.current) fadeTo(ambientRef.current, AMBIENT_VOL, 1400);
-    applyActiveSfx();
-  }, [applyActiveSfx]);
+    ambTargetRef.current = -1; // force ambient re-fade
+    apply();
+  }, [apply]);
 
   const disable = useCallback(() => {
     enabledRef.current = false;
@@ -123,8 +154,27 @@ export default function AudioController() {
     sfxRef.current.forEach((a) => fadeTo(a, 0, 600));
   }, []);
 
-  // restore preference — browsers block audio until a user gesture, so if the
-  // user had it on we resume on their first interaction.
+  // volume slider — apply instantly to whatever is playing
+  const onVolume = useCallback((v: number) => {
+    masterRef.current = v;
+    setVol(v);
+    try {
+      localStorage.setItem(LS_VOL, String(v));
+    } catch {
+      /* ignore */
+    }
+    if (!enabledRef.current) return;
+    if (ambientRef.current && !ambientRef.current.paused) {
+      ambientRef.current.volume = clamp(AMBIENT_VOL * v * (duckRef.current ? 0.3 : 1));
+      ambTargetRef.current = AMBIENT_VOL * v * (duckRef.current ? 0.3 : 1);
+    }
+    for (const s of SFX) {
+      const a = sfxRef.current.get(s.src);
+      if (a && !a.paused) a.volume = clamp(s.vol * v);
+    }
+  }, []);
+
+  // restore on/off preference (needs a user gesture to actually start audio)
   useEffect(() => {
     let saved: string | null = null;
     try {
@@ -154,22 +204,22 @@ export default function AudioController() {
     }
   }, [enable]);
 
-  // scroll → update which chapter ambience plays
+  // scroll → re-evaluate
   useEffect(() => {
     let ticking = false;
     const onScroll = () => {
       if (ticking) return;
       ticking = true;
       requestAnimationFrame(() => {
-        applyActiveSfx();
+        apply();
         ticking = false;
       });
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
-  }, [applyActiveSfx]);
+  }, [apply]);
 
-  // pause everything when the tab is hidden
+  // pause when the tab is hidden
   useEffect(() => {
     const onVis = () => {
       if (!enabledRef.current) return;
@@ -178,41 +228,55 @@ export default function AudioController() {
         sfxRef.current.forEach((a) => a.pause());
       } else {
         ambientRef.current?.play().catch(() => {});
-        applyActiveSfx();
+        apply();
       }
     };
     document.addEventListener('visibilitychange', onVis);
     return () => document.removeEventListener('visibilitychange', onVis);
-  }, [applyActiveSfx]);
+  }, [apply]);
 
   return (
     <>
-      {/* speaker toggle */}
-      <button
-        type="button"
-        onClick={() => (enabled ? disable() : enable())}
-        aria-label={enabled ? 'Tắt âm thanh' : 'Bật âm thanh'}
-        aria-pressed={enabled}
-        className="group fixed bottom-7 right-6 z-[95] flex h-[46px] w-[46px] items-center justify-center rounded-full border border-vn-gold-antique/40 bg-[rgba(8,8,8,0.5)] backdrop-blur-sm transition-colors duration-300 hover:border-vn-gold md:bottom-9 md:right-9"
-      >
-        <span className="relative flex h-4 w-4 items-center justify-center text-vn-gold">
-          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor" stroke="none" />
-            {enabled ? (
-              <>
-                <path d="M16 8.5a5 5 0 0 1 0 7" />
-                <path d="M18.5 6a8 8 0 0 1 0 12" className="opacity-70" />
-              </>
-            ) : (
-              <path d="M17 9l4 6M21 9l-4 6" />
-            )}
-          </svg>
-        </span>
-        {/* soft pulse when playing */}
+      <div className="fixed bottom-7 right-6 z-[95] flex items-center gap-3 md:bottom-9 md:right-9">
+        {/* volume slider (shows when sound is on) */}
         {enabled && (
-          <span className="pointer-events-none absolute inset-0 animate-ping rounded-full border border-vn-gold/30" style={{ animationDuration: '3s' }} />
+          <input
+            type="range"
+            min={0}
+            max={100}
+            value={Math.round(vol * 100)}
+            onChange={(e) => onVolume(Number(e.target.value) / 100)}
+            aria-label="Âm lượng"
+            className="vol-slider hidden w-24 sm:block"
+          />
         )}
-      </button>
+
+        {/* speaker toggle */}
+        <button
+          type="button"
+          onClick={() => (enabled ? disable() : enable())}
+          aria-label={enabled ? 'Tắt âm thanh' : 'Bật âm thanh'}
+          aria-pressed={enabled}
+          className="group relative flex h-[46px] w-[46px] items-center justify-center rounded-full border border-vn-gold-antique/40 bg-[rgba(8,8,8,0.5)] backdrop-blur-sm transition-colors duration-300 hover:border-vn-gold"
+        >
+          <span className="relative flex h-4 w-4 items-center justify-center text-vn-gold">
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor" stroke="none" />
+              {enabled ? (
+                <>
+                  <path d="M16 8.5a5 5 0 0 1 0 7" />
+                  <path d="M18.5 6a8 8 0 0 1 0 12" className="opacity-70" />
+                </>
+              ) : (
+                <path d="M17 9l4 6M21 9l-4 6" />
+              )}
+            </svg>
+          </span>
+          {enabled && (
+            <span className="pointer-events-none absolute inset-0 animate-ping rounded-full border border-vn-gold/30" style={{ animationDuration: '3s' }} />
+          )}
+        </button>
+      </div>
 
       {/* first-visit prompt */}
       {showPrompt && !enabled && (

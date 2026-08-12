@@ -234,6 +234,33 @@ html.lenis body {
   }
 }
 
+/* Volume slider (audio control) */
+.vol-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(244, 235, 216, 0.25);
+  outline: none;
+  cursor: pointer;
+}
+.vol-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--vn-gold);
+  box-shadow: 0 0 6px rgba(255, 205, 0, 0.5);
+}
+.vol-slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border: none;
+  border-radius: 50%;
+  background: var(--vn-gold);
+}
+
 /* Utility: perspective stage for 2.5D + symbolic 3D */
 .stage-3d {
   perspective: 1400px;
