@@ -21,7 +21,7 @@ const DOCS: Doc[] = [
   { label: 'Những trang viết', sub: 'Bản thảo', photo: '/images/photos/doc-2.webp', x: '65%', y: '11%', rot: 5, depth: 0.28, w: '210px' },
   { label: 'Bàn làm việc', sub: 'Miệt mài', photo: '/images/photos/doc-3.webp', x: '19%', y: '57%', rot: -3, depth: 0.22, w: '205px' },
   { label: 'Nghiên cứu', sub: 'Tài liệu', photo: '/images/photos/doc-4.webp', x: '60%', y: '60%', rot: 7, depth: 0.34, w: '230px' },
-  { label: 'Trang bản thảo', sub: 'Từng con chữ', photo: '/images/photos/doc-5.webp', x: '39%', y: '31%', rot: -2, depth: 0.1, w: '250px' },
+  { label: 'Trang bản thảo', sub: 'Từng con chữ', photo: '/images/photos/doc-5.webp', x: '77%', y: '50%', rot: 4, depth: 0.14, w: '200px' },
 ];
 
 export default function NguyenAiQuoc() {
