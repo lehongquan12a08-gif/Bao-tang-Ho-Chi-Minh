@@ -22,11 +22,11 @@ export default function Chapter1911() {
         },
       });
 
-      // full-bleed archival photo — slow Ken Burns push
+      // full-bleed archival photo — very gentle push (keeps the man in frame)
       tl.fromTo(
         q('.ship'),
-        { scale: 1.05, xPercent: -3 },
-        { scale: 1.2, xPercent: 3, ease: 'none' },
+        { scale: 1.03 },
+        { scale: 1.1, ease: 'none' },
         0
       );
 
@@ -53,34 +53,36 @@ export default function Chapter1911() {
       }}
     >
       <div className="sticky top-0 flex h-screen flex-col items-center justify-center overflow-hidden">
-        {/* full-bleed archival photograph — ra đi tìm đường cứu nước (1911) */}
+        {/* full-bleed archival photograph — the young man stays clear on the RIGHT */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/images/photos/ship-1911.webp"
           alt="Con tàu rời bến — hành trình ra đi tìm đường cứu nước (1911)"
           className="ship will-transform pointer-events-none absolute inset-0 z-0 h-full w-full object-cover"
-          style={{ filter: 'sepia(0.35) contrast(1.05) brightness(0.72)' }}
+          style={{ filter: 'sepia(0.32) contrast(1.05) brightness(0.85)', objectPosition: 'center' }}
         />
 
-        {/* scrim for legibility */}
+        {/* LEFT scrim only — darkens the text side, leaves the man on the right lit */}
         <div
           className="pointer-events-none absolute inset-0 z-[1]"
           style={{
             background:
-              'radial-gradient(ellipse at 50% 50%, rgba(8,8,8,0.45) 0%, rgba(8,8,8,0.35) 40%, rgba(8,8,8,0.88) 100%)',
+              'linear-gradient(90deg, rgba(8,8,8,0.94) 0%, rgba(8,8,8,0.75) 28%, rgba(8,8,8,0.3) 52%, rgba(8,8,8,0) 74%)',
           }}
         />
+        {/* soft bottom gradient so the journey line reads */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] h-[30vh] bg-gradient-to-t from-vn-black/85 to-transparent" />
 
         {/* original harbour-mist texture (generated asset) */}
-        <TextureBg src="/images/mist.webp" className="z-[1] opacity-30 mix-blend-overlay" />
+        <TextureBg src="/images/mist.webp" className="z-[1] opacity-25 mix-blend-overlay" />
 
-        {/* year, faint behind */}
-        <h2 className="headline-year pointer-events-none absolute top-[8%] z-[2] text-white/[0.08]">
+        {/* year, faint behind the title */}
+        <h2 className="headline-year pointer-events-none absolute left-[6%] top-[14%] z-[2] text-white/[0.07]">
           1911
         </h2>
 
-        {/* three-word headline */}
-        <div className="relative z-20 flex flex-col items-center gap-1 text-center">
+        {/* headline — anchored LEFT so it never covers the man on the right */}
+        <div className="absolute left-[6%] top-1/2 z-20 flex max-w-[46vw] -translate-y-1/2 flex-col items-start gap-1 text-left">
           <span className="w-radi will-transform headline-mega text-vn-ivory text-glow-gold">RA ĐI</span>
           <span className="w-tim will-transform font-display text-3xl uppercase tracking-[0.3em] text-vn-gold md:text-5xl">
             Tìm đường
