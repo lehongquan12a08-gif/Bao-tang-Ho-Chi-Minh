@@ -151,18 +151,24 @@ function makeMountain() {
       const gust = 0.55 + 0.45 * (0.5 + 0.5 * Math.sin(2 * Math.PI * (1 / 5.5) * t + 1.3 * Math.sin(2 * Math.PI * (1 / 2.3) * t)));
       g[i] = air[i] * gust * 0.75 + rustle[i] * 0.07 * (0.6 + 0.4 * Math.sin(2 * Math.PI * (1 / 1.7) * t));
     }
-    // clearer, more frequent bird calls — reads as forest, not sea
+    // frequent bird calls (roughly one per second) so the forest reads at once
     const chirp = (start, f, dur = 0.14) => {
       for (let i = 0; i < n; i++) {
         const t = i / sr - start; if (t < 0 || t > dur) continue;
         const env = Math.sin(Math.PI * (t / dur)) ** 2;
         const fm = f + 500 * Math.sin(2 * Math.PI * 20 * t);
-        g[i] += 0.06 * env * Math.sin(2 * Math.PI * fm * t);
+        g[i] += 0.085 * env * Math.sin(2 * Math.PI * fm * t);
       }
     };
-    chirp(2.0, 2800); chirp(2.25, 3200); chirp(2.45, 2600);
-    chirp(7.4, 3000); chirp(7.62, 3400);
-    chirp(11.5, 2500); chirp(13.0, 2900); chirp(13.2, 3300); chirp(13.4, 3000);
+    chirp(0.7, 2800); chirp(0.95, 3200);
+    chirp(2.9, 2600); chirp(3.15, 3000);
+    chirp(5.0, 3300); chirp(5.3, 2500);
+    chirp(7.1, 2900); chirp(7.35, 3400); chirp(7.55, 3000);
+    chirp(9.0, 2700); chirp(9.4, 3100);
+    chirp(11.2, 2500); chirp(11.5, 2900);
+    chirp(13.0, 3300); chirp(13.25, 2800); chirp(13.45, 3000);
+    chirp(15.2, 2600); chirp(15.5, 3200);
+    chirp(16.8, 2900);
   });
   normalize(out, 0.7);
   writeWav(join(OUT, 'sfx', 'mountain-1941.wav'), sr, [out]);
