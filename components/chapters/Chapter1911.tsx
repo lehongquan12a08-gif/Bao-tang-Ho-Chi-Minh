@@ -22,11 +22,11 @@ export default function Chapter1911() {
         },
       });
 
-      // full-bleed archival photo — very gentle push (keeps the man in frame)
+      // full-bleed archival photo — barely any zoom (keeps the man's face intact)
       tl.fromTo(
         q('.ship'),
-        { scale: 1.03 },
-        { scale: 1.1, ease: 'none' },
+        { scale: 1.0 },
+        { scale: 1.04, ease: 'none' },
         0
       );
 
@@ -53,14 +53,17 @@ export default function Chapter1911() {
       }}
     >
       <div className="sticky top-0 flex h-screen flex-col items-center justify-center overflow-hidden">
-        {/* full-bleed archival photograph — the young man stays clear on the RIGHT */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/images/photos/ship-1911.webp"
-          alt="Con tàu rời bến — hành trình ra đi tìm đường cứu nước (1911)"
-          className="ship will-transform pointer-events-none absolute inset-0 z-0 h-full w-full object-cover"
-          style={{ filter: 'sepia(0.32) contrast(1.05) brightness(0.85)', objectPosition: 'center' }}
-        />
+        {/* archival photo — starts BELOW the navbar so the man's face is never
+            hidden by it; object-position top keeps his full face in frame */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 top-[72px] z-0 overflow-hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/photos/ship-1911.webp"
+            alt="Con tàu rời bến — hành trình ra đi tìm đường cứu nước (1911)"
+            className="ship will-transform h-full w-full object-cover"
+            style={{ filter: 'sepia(0.32) contrast(1.05) brightness(0.85)', objectPosition: 'center top' }}
+          />
+        </div>
 
         {/* LEFT scrim only — darkens the text side, leaves the man on the right lit */}
         <div
