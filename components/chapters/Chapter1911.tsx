@@ -78,8 +78,14 @@ export default function Chapter1911() {
         {/* original harbour-mist texture (generated asset) */}
         <TextureBg src="/images/mist.webp" className="z-[1] opacity-25 mix-blend-overlay" />
 
-        {/* year — centred watermark, a touch clearer */}
-        <h2 className="headline-year pointer-events-none absolute left-1/2 top-1/2 z-[2] -translate-x-1/2 -translate-y-1/2 text-white/[0.12]">
+        {/* year — centred watermark, crisp gold outline so it reads clearly */}
+        <h2
+          className="headline-year pointer-events-none absolute left-1/2 top-1/2 z-[2] -translate-x-1/2 -translate-y-1/2"
+          style={{
+            color: 'rgba(255, 205, 0, 0.1)',
+            WebkitTextStroke: '2px rgba(255, 205, 0, 0.55)',
+          }}
+        >
           1911
         </h2>
 
