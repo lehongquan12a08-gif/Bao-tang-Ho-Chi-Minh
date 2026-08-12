@@ -8,7 +8,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 // Drop files per public/audio/README.md; missing files stay silent (no errors).
 // Bump when a generated audio file changes so browsers fetch the new version
 // instead of a cached copy of the same filename.
-const V = 'v=4';
+const V = 'v=5';
 const AMBIENT_SRC = `/audio/ambient.wav?${V}`;
 const AMBIENT_VOL = 0.22;
 

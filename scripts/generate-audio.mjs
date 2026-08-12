@@ -142,33 +142,18 @@ function makeMountain() {
   const sr = 22050, sec = 18;
   const out = seamless(sr, sec, (g, sr) => {
     const n = g.length;
-    // BIRDS are the lead — a soft steady breeze + faint cicadas sit underneath,
-    // deliberately quiet so nothing reads as "ocean waves".
-    const breeze = highpass(lowpass(whiteN(n), 1800, sr), 900, sr); // gentle high hiss
-    const cicada = highpass(lowpass(whiteN(n), 6000, sr), 4200, sr); // daytime shimmer
+    // Gentle, steady mountain breeze — NO synthetic birds (they sounded fake),
+    // NO low rumble (that read as ocean). Just airy wind with soft organic drift.
+    const air = highpass(lowpass(whiteN(n), 2600, sr), 800, sr); // airy band
+    const warm = highpass(lowpass(whiteN(n), 700, sr), 320, sr); // faint mid body
     for (let i = 0; i < n; i++) {
       const t = i / sr;
-      const steady = 0.7 + 0.3 * Math.sin(2 * Math.PI * (1 / 3.5) * t); // small, quick, not swelling
-      g[i] = breeze[i] * steady * 0.32 + cicada[i] * 0.04 * (0.7 + 0.3 * Math.sin(2 * Math.PI * 6 * t));
+      // slow, irregular drift at incommensurate rates → organic, never a wave swell
+      const env = 0.78 + 0.22 * Math.sin(2 * Math.PI * (1 / 9.0) * t) * Math.sin(2 * Math.PI * (1 / 6.5) * t + 0.7);
+      g[i] = air[i] * env * 0.5 + warm[i] * env * 0.12;
     }
-    // many LOUD, clear bird calls — this is what the ear latches onto
-    const chirp = (start, f, dur = 0.16, gain = 0.17) => {
-      for (let i = 0; i < n; i++) {
-        const t = i / sr - start; if (t < 0 || t > dur) continue;
-        const env = Math.sin(Math.PI * (t / dur)) ** 2;
-        const fm = f + 600 * Math.sin(2 * Math.PI * 22 * t);
-        g[i] += gain * env * (Math.sin(2 * Math.PI * fm * t) + 0.4 * Math.sin(2 * Math.PI * fm * 2 * t));
-      }
-    };
-    // a warble = two quick notes
-    const warble = (start, f) => { chirp(start, f); chirp(start + 0.19, f * 1.15, 0.12, 0.14); };
-    warble(0.4, 2700); warble(1.9, 3100); warble(3.2, 2500);
-    warble(4.6, 3300); warble(6.0, 2800); warble(7.3, 3000);
-    warble(8.7, 2600); warble(10.0, 3200); warble(11.3, 2900);
-    warble(12.7, 2500); warble(14.0, 3100); warble(15.3, 2800);
-    warble(16.6, 3000);
   });
-  normalize(out, 0.8);
+  normalize(out, 0.5);
   writeWav(join(OUT, 'sfx', 'mountain-1941.wav'), sr, [out]);
   console.log('✓ mountain-1941.wav');
 }

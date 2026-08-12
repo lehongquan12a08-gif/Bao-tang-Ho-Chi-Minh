@@ -76,10 +76,10 @@ export default function Chapter1941() {
           <h2 className="txt-1941 will-transform headline-year text-vn-ivory text-glow-gold">
             1941
           </h2>
-          <p className="txt-trove will-transform mt-1 font-display text-4xl uppercase tracking-[0.35em] text-vn-gold md:text-6xl">
+          <p className="txt-trove will-transform mt-5 font-display text-4xl uppercase tracking-[0.35em] text-vn-gold md:mt-7 md:text-6xl">
             Trở về
           </p>
-          <p className="txt-30 will-transform mt-6 font-body text-[13px] uppercase tracking-[0.3em] text-vn-ivory/75 md:text-base">
+          <p className="txt-30 will-transform mt-5 font-body text-[13px] uppercase tracking-[0.3em] text-vn-ivory/75 md:text-base">
             Sau 30 năm xa Tổ quốc
           </p>
         </div>
