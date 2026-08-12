@@ -6,14 +6,17 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 // one-shots (e.g. the real Tuyên ngôn recording) that fire inside a scroll
 // `range` (fraction of the section) so they hit exactly at the right moment.
 // Drop files per public/audio/README.md; missing files stay silent (no errors).
-const AMBIENT_SRC = '/audio/ambient.wav';
+// Bump when a generated audio file changes so browsers fetch the new version
+// instead of a cached copy of the same filename.
+const V = 'v=4';
+const AMBIENT_SRC = `/audio/ambient.wav?${V}`;
 const AMBIENT_VOL = 0.22;
 
 type Sfx = { id: string; src: string; vol: number; loop?: boolean; range?: [number, number] };
 const SFX: Sfx[] = [
-  { id: 'chapter-1911', src: '/audio/sfx/ship-1911.wav', vol: 0.3 },
-  { id: 'chapter-1941', src: '/audio/sfx/mountain-1941.wav', vol: 0.28 },
-  { id: 'chapter-1945', src: '/audio/sfx/crowd-1945.wav', vol: 0.12 },
+  { id: 'chapter-1911', src: `/audio/sfx/ship-1911.wav?${V}`, vol: 0.3 },
+  { id: 'chapter-1941', src: `/audio/sfx/mountain-1941.wav?${V}`, vol: 0.3 },
+  { id: 'chapter-1945', src: `/audio/sfx/crowd-1945.wav?${V}`, vol: 0.12 },
   // Bác đọc Tuyên ngôn — plays once when the Ba Đình scene is on screen.
   { id: 'chapter-1945', src: '/audio/sfx/declaration-1945.mp3', vol: 0.9, loop: false, range: [0.44, 0.74] },
 ];
