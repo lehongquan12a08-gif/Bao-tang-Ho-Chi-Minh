@@ -46,15 +46,15 @@ export default function Chapter1941() {
           src="/images/photos/mountain-1941.webp"
           alt="Núi rừng Việt Bắc"
           className="m-photo will-transform pointer-events-none absolute inset-0 z-0 h-full w-full object-cover"
-          style={{ filter: 'grayscale(0.3) contrast(1.05) brightness(0.6)', objectPosition: 'center 38%' }}
+          style={{ filter: 'grayscale(0.3) contrast(1.05) brightness(0.74)', objectPosition: 'center 8%' }}
         />
 
-        {/* scrim for legibility */}
+        {/* scrim: dark at the top (behind the year), clear over the faces below */}
         <div
           className="pointer-events-none absolute inset-0 z-[1]"
           style={{
             background:
-              'radial-gradient(ellipse at 50% 42%, rgba(8,10,9,0.35) 0%, rgba(8,10,9,0.4) 45%, rgba(7,11,10,0.92) 100%)',
+              'linear-gradient(180deg, rgba(8,10,9,0.9) 0%, rgba(8,10,9,0.55) 28%, rgba(8,10,9,0.2) 52%, rgba(8,10,9,0.35) 75%, rgba(7,11,10,0.92) 100%)',
           }}
         />
 
@@ -72,7 +72,7 @@ export default function Chapter1941() {
         />
 
         {/* text — anchored high so the photographed faces stay clear below */}
-        <div className="absolute top-[12%] left-1/2 z-20 flex -translate-x-1/2 flex-col items-center text-center">
+        <div className="absolute top-[8%] left-1/2 z-20 flex -translate-x-1/2 flex-col items-center text-center">
           <h2 className="txt-1941 will-transform headline-year text-vn-ivory text-glow-gold">
             1941
           </h2>

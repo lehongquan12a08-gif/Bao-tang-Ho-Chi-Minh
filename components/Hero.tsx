@@ -32,7 +32,7 @@ export default function Hero() {
 
       // --- Phase 1 : depth & light ---------------------------------------
       tl.to(q('.hero-portrait'), { scale: 1.08, yPercent: -3, ease: 'none' }, 0)
-        .to(q('.hero-star'), { rotate: 16, scale: 1.15, ease: 'none' }, 0)
+        .to(q('.hero-star'), { scale: 1.15, ease: 'none' }, 0)
         .to(q('.hero-scrollhint'), { opacity: 0, ease: 'none' }, 0.12);
 
       // --- Phase 2 : title + portrait recede QUICKLY (fully gone by ~0.5) -
@@ -40,7 +40,7 @@ export default function Hero() {
         .to(q('.hero-portrait'), { opacity: 0, scale: 1.12, ease: 'power2.in', duration: 0.16 }, 0.34);
 
       // --- Phase 3 : dive through the star (only AFTER the face is gone) --
-      tl.to(q('.hero-star'), { scale: 9, rotate: 24, ease: 'power1.in' }, 0.54)
+      tl.to(q('.hero-star'), { scale: 9, ease: 'power1.in' }, 0.54)
         .to(
           q('.hero-bg'),
           {

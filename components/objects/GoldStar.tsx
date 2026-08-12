@@ -7,14 +7,34 @@ interface GoldStarProps {
 }
 
 /**
- * Symbolic 3D-feel five-pointed star (ngôi sao vàng).
- * Built from layered SVG facets + radial light so it reads as a sculpted
- * object under raking light rather than a flat icon.
+ * The gold five-pointed star of the Vietnamese flag — UPRIGHT (one point up),
+ * perfectly symmetric, with a subtle "folded" facet (light/dark halves per arm)
+ * for a touch of dimension. Never rotate this in animation; it should always
+ * read as the flag star.
+ *
+ * Geometry: outer points at angles -90°,-18°,54°,126°,198°; inner points offset
+ * by 36°; centre at (100,100).
  */
 const GoldStar = forwardRef<SVGSVGElement, GoldStarProps>(function GoldStar(
   { className = '', breathe = false },
   ref
 ) {
+  // Right (lighter) facets: C, O_i, j_i.  Left (darker) facets: C, j_{i-1}, O_i.
+  const right = [
+    '100,100 100,22 117.6,75.7',
+    '100,100 174.2,75.9 128.5,109.3',
+    '100,100 145.8,163.1 100,130',
+    '100,100 54.2,163.1 71.5,109.3',
+    '100,100 25.8,75.9 82.4,75.7',
+  ];
+  const left = [
+    '100,100 82.4,75.7 100,22',
+    '100,100 117.6,75.7 174.2,75.9',
+    '100,100 128.5,109.3 145.8,163.1',
+    '100,100 100,130 54.2,163.1',
+    '100,100 71.5,109.3 25.8,75.9',
+  ];
+
   return (
     <svg
       ref={ref}
@@ -25,43 +45,40 @@ const GoldStar = forwardRef<SVGSVGElement, GoldStarProps>(function GoldStar(
     >
       <defs>
         <radialGradient id="starHalo" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#FFCD00" stopOpacity="0.55" />
-          <stop offset="40%" stopColor="#DA251D" stopOpacity="0.18" />
+          <stop offset="0%" stopColor="#FFCD00" stopOpacity="0.5" />
+          <stop offset="42%" stopColor="#DA251D" stopOpacity="0.16" />
           <stop offset="100%" stopColor="#DA251D" stopOpacity="0" />
         </radialGradient>
-        <linearGradient id="starFaceA" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#FFE47A" />
-          <stop offset="55%" stopColor="#FFCD00" />
-          <stop offset="100%" stopColor="#D4A72C" />
+        <linearGradient id="starLight" x1="0" y1="0" x2="0.4" y2="1">
+          <stop offset="0%" stopColor="#FFE889" />
+          <stop offset="100%" stopColor="#FFCD00" />
         </linearGradient>
-        <linearGradient id="starFaceB" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#D4A72C" />
-          <stop offset="100%" stopColor="#8a6a12" />
+        <linearGradient id="starDark" x1="0" y1="0" x2="0.4" y2="1">
+          <stop offset="0%" stopColor="#E8B92A" />
+          <stop offset="100%" stopColor="#C79412" />
         </linearGradient>
       </defs>
 
       {/* ambient halo */}
       <circle cx="100" cy="100" r="100" fill="url(#starHalo)" />
 
-      {/* Left facets (shadow side) */}
+      {/* folded facets — symmetric */}
       <g>
-        <polygon points="100,18 118,74 100,100" fill="url(#starFaceB)" />
-        <polygon points="182,74 124,80 100,100" fill="url(#starFaceA)" />
-        <polygon points="150,168 112,120 100,100" fill="url(#starFaceB)" />
-        <polygon points="50,168 88,120 100,100" fill="url(#starFaceA)" />
-        <polygon points="18,74 76,80 100,100" fill="url(#starFaceB)" />
-        {/* symmetrical bright facets */}
-        <polygon points="100,18 82,74 100,100" fill="url(#starFaceA)" />
-        <polygon points="182,74 124,80 124,80" fill="url(#starFaceA)" />
+        {left.map((pts, i) => (
+          <polygon key={`l${i}`} points={pts} fill="url(#starDark)" />
+        ))}
+        {right.map((pts, i) => (
+          <polygon key={`r${i}`} points={pts} fill="url(#starLight)" />
+        ))}
       </g>
 
-      {/* crisp outline star for definition */}
+      {/* crisp outline */}
       <polygon
-        points="100,14 117.6,68.2 174.9,68.2 128.6,101.8 146.3,156 100,122.4 53.7,156 71.4,101.8 25.1,68.2 82.4,68.2"
+        points="100,22 117.6,75.7 174.2,75.9 128.5,109.3 145.8,163.1 100,130 54.2,163.1 71.5,109.3 25.8,75.9 82.4,75.7"
         fill="none"
-        stroke="#FFE47A"
+        stroke="#FFE889"
         strokeWidth="0.8"
-        strokeOpacity="0.5"
+        strokeOpacity="0.45"
       />
     </svg>
   );

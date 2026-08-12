@@ -5,6 +5,13 @@ import { gsap, useGSAP } from '@/lib/gsap';
 import GoldStar from '@/components/objects/GoldStar';
 import TextureBg from '@/components/TextureBg';
 
+/**
+ * 1945 — three cleanly separated acts (no overlapping text):
+ *   A. the date assembles (02 → 09 → 1945 → 02.09.1945)
+ *   B. the Ba Đình / Tuyên ngôn Độc lập photograph, held on screen
+ *   C. deep red → ĐỘC LẬP → TỰ DO, under the upright gold star
+ * Each element is only ever visible during its own act.
+ */
 export default function Chapter1945() {
   const root = useRef<HTMLDivElement>(null);
 
@@ -20,89 +27,82 @@ export default function Chapter1945() {
         },
       });
 
-      // -- Phase A : the date assembles (each fully clears before the next) --
-      tl.fromTo(q('.d-02'), { opacity: 0, scale: 1.6 }, { opacity: 1, scale: 1 }, 0.02)
-        .to(q('.d-02'), { opacity: 0, scale: 0.7 }, 0.09)
-        .fromTo(q('.d-09'), { opacity: 0, scale: 1.6 }, { opacity: 1, scale: 1 }, 0.11)
-        .to(q('.d-09'), { opacity: 0, scale: 0.7 }, 0.18)
-        .fromTo(q('.d-1945'), { opacity: 0, scale: 1.6 }, { opacity: 1, scale: 1 }, 0.2)
-        .to(q('.d-1945'), { opacity: 0, scale: 0.7 }, 0.28)
-        .fromTo(q('.d-full'), { opacity: 0, y: 40 }, { opacity: 1, y: 0 }, 0.32)
-        .to(q('.d-full'), { opacity: 0, y: -30 }, 0.42);
+      // ---- Act A : the date assembles -----------------------------------
+      const frag = (sel: Element[], at: number) =>
+        tl.fromTo(sel, { opacity: 0, scale: 1.5 }, { opacity: 1, scale: 1, duration: 0.05 }, at)
+          .to(sel, { opacity: 0, scale: 0.75, duration: 0.04 }, at + 0.07);
+      frag(q('.d-02'), 0.02);
+      frag(q('.d-09'), 0.14);
+      frag(q('.d-1945'), 0.26);
+      tl.fromTo(q('.d-full'), { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.05 }, 0.38)
+        .to(q('.d-full'), { opacity: 0, y: -24, duration: 0.05 }, 0.46);
 
-      // -- Phase B : Ba Đình scene (after the date is fully gone) -----------
-      tl.fromTo(q('.scene'), { opacity: 0 }, { opacity: 1 }, 0.44)
-        .fromTo(q('.s-build'), { scale: 1.1 }, { scale: 1, ease: 'none' }, 0.44)
-        .fromTo(q('.s-decl'), { yPercent: 8, opacity: 0, scale: 0.95 }, { yPercent: 0, opacity: 1, scale: 1, ease: 'none' }, 0.46)
-        .fromTo(q('.badinh-label'), { opacity: 0, y: 20 }, { opacity: 1, y: 0 }, 0.48)
-        .to(q('.scene'), { opacity: 0 }, 0.56);
+      // ---- Act B : the photograph (held) --------------------------------
+      tl.fromTo(q('.scene'), { opacity: 0 }, { opacity: 1, duration: 0.05 }, 0.52)
+        .fromTo(q('.s-decl'), { opacity: 0, y: 30, scale: 0.96 }, { opacity: 1, y: 0, scale: 1, duration: 0.06 }, 0.53)
+        .fromTo(q('.badinh-label'), { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.04 }, 0.55)
+        // HOLD 0.59 → 0.68
+        .to(q('.scene'), { opacity: 0, duration: 0.05 }, 0.68);
 
-      // -- Phase C : black → deep red → ĐỘC LẬP / TỰ DO --------------------
-      tl.to(q('.bg-1945'), { backgroundColor: '#8F1713', ease: 'none' }, 0.56)
-        .to(q('.silk-45'), { opacity: 0.7, ease: 'none' }, 0.56)
-        .fromTo(q('.star-45'), { opacity: 0, scale: 0.6, rotate: -20 }, { opacity: 0.5, scale: 1, rotate: 0 }, 0.6)
-        .fromTo(q('.w-doclap'), { opacity: 0, scale: 1.4 }, { opacity: 1, scale: 1 }, 0.64)
-        .to(q('.w-doclap'), { opacity: 0, y: -60 }, 0.78)
-        .fromTo(q('.w-tudo'), { opacity: 0, scale: 1.4 }, { opacity: 1, scale: 1 }, 0.82);
+      // ---- Act C : red → ĐỘC LẬP → TỰ DO --------------------------------
+      tl.to(q('.bg-1945'), { backgroundColor: '#8F1713', duration: 0.06, ease: 'none' }, 0.66)
+        .to(q('.silk-45'), { opacity: 0.7, duration: 0.06, ease: 'none' }, 0.66)
+        .fromTo(q('.star-45'), { opacity: 0, scale: 0.7 }, { opacity: 0.5, scale: 1, duration: 0.06 }, 0.7)
+        .fromTo(q('.w-doclap'), { opacity: 0, scale: 1.35 }, { opacity: 1, scale: 1, duration: 0.05 }, 0.74)
+        .to(q('.w-doclap'), { opacity: 0, y: -50, duration: 0.05 }, 0.85)
+        .fromTo(q('.w-tudo'), { opacity: 0, scale: 1.35 }, { opacity: 1, scale: 1, duration: 0.05 }, 0.89);
     },
     { scope: root }
   );
 
   return (
-    <section id="chapter-1945" ref={root} className="relative h-[560vh]">
+    <section id="chapter-1945" ref={root} className="relative h-[620vh]">
       <div className="bg-1945 sticky top-0 flex h-screen items-center justify-center overflow-hidden bg-vn-black">
-        {/* red-silk atmosphere, fades in with the finale */}
+        {/* red-silk atmosphere for the finale */}
         <TextureBg src="/images/silk.webp" className="silk-45 z-0 opacity-0" />
 
-        {/* gold star behind the finale words */}
-        <div className="star-45 will-transform pointer-events-none absolute left-1/2 top-1/2 z-[1] -translate-x-1/2 -translate-y-1/2 opacity-0">
+        {/* upright gold star behind the finale words */}
+        <div className="star-45 pointer-events-none absolute left-1/2 top-1/2 z-[1] -translate-x-1/2 -translate-y-1/2 opacity-0">
           <GoldStar className="h-[64vh] w-[64vh]" />
         </div>
 
-        {/* date fragments */}
-        <span className="d-02 will-transform absolute z-[5] headline-year text-vn-ivory">02</span>
-        <span className="d-09 will-transform absolute z-[5] headline-year text-vn-ivory">09</span>
-        <span className="d-1945 will-transform absolute z-[5] headline-year text-vn-ivory">1945</span>
-        <span className="d-full will-transform absolute z-[5] headline-mega text-vn-gold text-glow-gold">
+        {/* Act A — date fragments */}
+        <span className="d-02 will-transform absolute z-[5] headline-year text-vn-ivory opacity-0">02</span>
+        <span className="d-09 will-transform absolute z-[5] headline-year text-vn-ivory opacity-0">09</span>
+        <span className="d-1945 will-transform absolute z-[5] headline-year text-vn-ivory opacity-0">1945</span>
+        <span className="d-full will-transform absolute z-[5] headline-mega text-vn-gold text-glow-gold opacity-0">
           02.09.1945
         </span>
 
-        {/* Ba Đình 1945 — historical photographs */}
+        {/* Act B — the photograph */}
         <div className="scene pointer-events-none absolute inset-0 z-[3] opacity-0">
-          {/* faint Ba Đình square atmosphere */}
+          {/* faint Ba Đình atmosphere */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/images/photos/badinh.webp"
             alt=""
-            className="s-build will-transform absolute inset-0 h-full w-full object-cover opacity-[0.22]"
+            className="absolute inset-0 h-full w-full object-cover opacity-[0.18]"
           />
-          {/* scrim so the label + centrepiece read cleanly */}
-          <div
-            className="absolute inset-0"
-            style={{
-              background:
-                'radial-gradient(ellipse at 50% 55%, rgba(8,8,8,0.35) 0%, rgba(8,8,8,0.55) 55%, rgba(8,8,8,0.92) 100%)',
-            }}
-          />
+          <div className="absolute inset-0 bg-vn-black/55" />
 
-          <p className="badinh-label will-transform absolute left-1/2 top-[14%] -translate-x-1/2 whitespace-nowrap font-display text-2xl uppercase tracking-[0.3em] text-vn-ivory md:text-4xl">
+          <p className="badinh-label will-transform absolute left-1/2 top-[12%] -translate-x-1/2 whitespace-nowrap font-display text-2xl uppercase tracking-[0.3em] text-vn-ivory md:text-4xl">
             Quảng trường Ba Đình
           </p>
 
           {/* centrepiece: Tuyên ngôn Độc lập */}
-          <div className="s-decl will-transform absolute left-1/2 top-[57%] w-[48vw] max-w-[640px] -translate-x-1/2 -translate-y-1/2">
+          <div className="s-decl will-transform absolute left-1/2 top-[56%] w-[54vw] max-w-[760px] -translate-x-1/2 -translate-y-1/2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/images/photos/declaration-1945.webp"
               alt="Chủ tịch Hồ Chí Minh đọc Tuyên ngôn Độc lập, khai sinh nước Việt Nam Dân chủ Cộng hòa"
-              className="photo-cine w-full shadow-2xl"
-              style={{ boxShadow: '0 30px 80px rgba(0,0,0,0.7)' }}
+              className="w-full"
+              style={{ boxShadow: '0 30px 80px rgba(0,0,0,0.75)' }}
             />
           </div>
         </div>
 
-        {/* finale words */}
-        <h2 className="w-doclap will-transform absolute z-[6] headline-mega font-serif-hist font-black text-vn-ivory">
+        {/* Act C — finale words */}
+        <h2 className="w-doclap will-transform absolute z-[6] headline-mega font-serif-hist font-black text-vn-ivory opacity-0">
           ĐỘC LẬP
         </h2>
         <h2 className="w-tudo will-transform absolute z-[6] headline-mega font-serif-hist font-black text-vn-ivory opacity-0">

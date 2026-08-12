@@ -30,26 +30,14 @@ export default function Chapter1911() {
         0
       );
 
-      // the ship sails ALONG the journey line (centred base at -50%)
-      tl.fromTo(
-        q('.ship-svg'),
-        { xPercent: -86 },
-        { xPercent: -14, ease: 'none' },
-        0
-      );
+      // the ship rides the leading edge of the gold line as it fills.
+      tl.fromTo(q('.ship-svg'), { left: '6%' }, { left: '94%', ease: 'none' }, 0)
+        .fromTo(q('.journey-fill'), { scaleX: 0.06 }, { scaleX: 0.94, ease: 'none' }, 0);
 
       // three-word headline builds
       tl.fromTo(q('.w-radi'), { opacity: 0, y: 40 }, { opacity: 1, y: 0 }, 0.05)
         .fromTo(q('.w-tim'), { opacity: 0, y: 40 }, { opacity: 1, y: 0 }, 0.28)
         .fromTo(q('.w-cuu'), { opacity: 0, y: 40 }, { opacity: 1, y: 0 }, 0.5);
-
-      // horizontal journey timeline fills
-      tl.fromTo(
-        q('.journey-fill'),
-        { scaleX: 0 },
-        { scaleX: 1, ease: 'none' },
-        0.15
-      );
     },
     { scope: root }
   );
@@ -104,8 +92,8 @@ export default function Chapter1911() {
         <div className="absolute bottom-[15vh] z-20 flex w-full max-w-3xl flex-col items-center px-8">
           <div className="relative h-px w-full bg-white/15">
             <div className="journey-fill absolute inset-y-0 left-0 w-full origin-left bg-vn-gold-antique" />
-            {/* ship sits ON the line */}
-            <div className="ship-svg will-transform pointer-events-none absolute bottom-0 left-1/2 z-10 w-[22vw] max-w-[260px]">
+            {/* ship sits ON the line and rides the leading edge of the fill */}
+            <div className="ship-svg will-transform pointer-events-none absolute bottom-0 left-0 z-10 w-[20vw] max-w-[240px] -translate-x-1/2">
               <Ship className="h-auto w-full" />
             </div>
           </div>

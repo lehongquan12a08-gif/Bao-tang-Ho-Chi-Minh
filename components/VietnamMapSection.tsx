@@ -27,7 +27,7 @@ export default function VietnamMapSection() {
 
       // red silk field expands into view; star settles; wordmark rises
       tl.fromTo(q('.vn-field'), { scale: 0.6, opacity: 0 }, { scale: 1, opacity: 1, ease: 'none' }, 0)
-        .fromTo(q('.vn-star'), { scale: 0.7, rotate: -18, opacity: 0 }, { scale: 1, rotate: 0, opacity: 1, ease: 'none' }, 0.05)
+        .fromTo(q('.vn-star'), { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, ease: 'none' }, 0.05)
         .fromTo(q('.vn-title'), { opacity: 0, y: 40 }, { opacity: 1, y: 0 }, 0.3)
         .fromTo(q('.vn-motto'), { opacity: 0 }, { opacity: 1 }, 0.45);
     },

@@ -21,7 +21,7 @@ export default function FinalSection() {
         },
       });
 
-      tl.fromTo(q('.final-star'), { opacity: 0, scale: 0.5, rotate: -30 }, { opacity: 0.65, scale: 1, rotate: 0 }, 0)
+      tl.fromTo(q('.final-star'), { opacity: 0, scale: 0.5 }, { opacity: 0.65, scale: 1 }, 0)
         .fromTo(q('.final-portrait'), { opacity: 0, scale: 1.1, y: 40 }, { opacity: 1, scale: 1, y: 0 }, 0.1)
         .fromTo(q('.final-name'), { opacity: 0, y: 30 }, { opacity: 1, y: 0 }, 0.4)
         .fromTo(q('.final-dates'), { opacity: 0 }, { opacity: 1 }, 0.6);
@@ -43,7 +43,7 @@ export default function FinalSection() {
 
       <div className="relative z-10 flex flex-col items-center">
         <div className="final-portrait will-transform flex flex-col items-center">
-          <Portrait heightClass="h-[62vh]" />
+          <Portrait src="/images/photos/portrait-final.webp" heightClass="h-[62vh]" />
         </div>
         <h2 className="final-name will-transform headline-mega mt-2 text-vn-ivory text-glow-gold">
           HỒ CHÍ MINH

@@ -8,9 +8,11 @@
  *   3. a vignette that darkens the photo's own bright background at the edges.
  */
 export default function Portrait({
+  src = '/images/photos/portrait.webp',
   heightClass = 'h-[62vh]',
   className = '',
 }: {
+  src?: string;
   heightClass?: string;
   className?: string;
 }) {
@@ -27,7 +29,7 @@ export default function Portrait({
       {/* 2 · photograph */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/images/photos/portrait.webp"
+        src={src}
         alt="Chân dung Chủ tịch Hồ Chí Minh"
         className={`relative block w-auto object-contain photo-cine portrait-mask ${heightClass}`}
       />
