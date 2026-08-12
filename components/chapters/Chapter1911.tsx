@@ -78,19 +78,21 @@ export default function Chapter1911() {
         {/* original harbour-mist texture (generated asset) */}
         <TextureBg src="/images/mist.webp" className="z-[1] opacity-25 mix-blend-overlay" />
 
-        {/* year — centred watermark, crisp gold outline so it reads clearly */}
-        <h2
-          className="headline-year pointer-events-none absolute left-1/2 top-1/2 z-[2] -translate-x-1/2 -translate-y-1/2"
+        {/* year — a clear gold number ABOVE the headline (never overlaps it) */}
+        <div
+          className="pointer-events-none absolute left-1/2 top-[9%] z-[2] -translate-x-1/2 font-serif-hist font-bold leading-none"
           style={{
-            color: 'rgba(255, 205, 0, 0.1)',
-            WebkitTextStroke: '2px rgba(255, 205, 0, 0.55)',
+            fontSize: 'clamp(48px, 6vw, 104px)',
+            letterSpacing: '0.06em',
+            color: 'rgba(255, 205, 0, 0.16)',
+            WebkitTextStroke: '1.6px rgba(255, 205, 0, 0.6)',
           }}
         >
           1911
-        </h2>
+        </div>
 
-        {/* headline — centred */}
-        <div className="absolute left-1/2 top-1/2 z-20 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1 text-center">
+        {/* headline — centred, nudged down so the year sits clear above it */}
+        <div className="absolute left-1/2 top-[56%] z-20 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1 text-center">
           <span className="w-radi will-transform headline-mega text-vn-ivory text-glow-gold">RA ĐI</span>
           <span className="w-tim will-transform font-display text-3xl uppercase tracking-[0.3em] text-vn-gold md:text-5xl">
             Tìm đường

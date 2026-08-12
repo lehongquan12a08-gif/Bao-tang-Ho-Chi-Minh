@@ -9,10 +9,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 const AMBIENT_SRC = '/audio/ambient.wav';
 const AMBIENT_VOL = 0.22;
 
-const SFX: { id: string; src: string; vol: number }[] = [
+// `loop: false` = a one-shot clip (e.g. the real Tuyên ngôn recording) that
+// plays once when the chapter is entered, instead of looping.
+const SFX: { id: string; src: string; vol: number; loop?: boolean }[] = [
   { id: 'chapter-1911', src: '/audio/sfx/ship-1911.wav', vol: 0.3 },
   { id: 'chapter-1941', src: '/audio/sfx/mountain-1941.wav', vol: 0.28 },
-  { id: 'chapter-1945', src: '/audio/sfx/crowd-1945.wav', vol: 0.24 },
+  { id: 'chapter-1945', src: '/audio/sfx/crowd-1945.wav', vol: 0.12 },
+  // Real recording of the Declaration of Independence — drop the file to enable.
+  { id: 'chapter-1945', src: '/audio/sfx/declaration-1945.mp3', vol: 0.8, loop: false },
 ];
 
 const LS_KEY = 'httcb-audio';
@@ -55,10 +59,10 @@ export default function AudioController() {
     const m = new Map<string, HTMLAudioElement>();
     for (const s of SFX) {
       const a = new Audio(s.src);
-      a.loop = true;
+      a.loop = s.loop !== false;
       a.volume = 0;
       a.preload = 'none';
-      m.set(s.id, a);
+      m.set(s.src, a); // key by src so two clips can share a chapter id
     }
     sfxRef.current = m;
 
@@ -83,8 +87,14 @@ export default function AudioController() {
       }
     }
     for (const s of SFX) {
-      const a = sfxRef.current.get(s.id);
-      if (a) fadeTo(a, active === s.id ? s.vol : 0, 1400);
+      const a = sfxRef.current.get(s.src);
+      if (!a) continue;
+      if (active === s.id) {
+        if (s.loop === false && a.paused) a.currentTime = 0; // replay from start
+        fadeTo(a, s.vol, s.loop === false ? 400 : 1400);
+      } else {
+        fadeTo(a, 0, 900);
+      }
     }
   }, []);
 

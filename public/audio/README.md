@@ -13,7 +13,14 @@ Sinh lại các file gốc bất cứ lúc nào: `node scripts/generate-audio.mj
 | `public/audio/ambient.wav` | **Nhạc nền** (loop suốt trang) | Pad trang nghiêm (A thứ ngũ cung), loop liền mạch 24s. |
 | `public/audio/sfx/ship-1911.wav` | Chương **1911** | Sóng biển + còi tàu. |
 | `public/audio/sfx/mountain-1941.wav` | Chương **1941** | Gió núi + chim rừng. |
-| `public/audio/sfx/crowd-1945.wav` | Chương **1945** | Đám đông rì rào khẽ. |
+| `public/audio/sfx/crowd-1945.wav` | Chương **1945** | Đám đông rì rào khẽ (nền). |
+| `public/audio/sfx/declaration-1945.mp3` | Chương **1945** | **Tiếng thật — bản ghi Bác đọc Tuyên ngôn Độc lập.** *Chưa có* → bạn tự bổ sung. |
+
+> **Tuyên ngôn Độc lập (tiếng thật):** đây là bản ghi lịch sử — tôi không tự tải
+> được. Bạn tải bản ghi (nguồn có quyền sử dụng: kho lưu trữ chính thống / tư liệu
+> giáo dục), đặt tên `declaration-1945.mp3` vào `public/audio/sfx/`. Nó sẽ phát MỘT
+> LẦN khi cuộn tới chương 1945 (không loop), trên nền tiếng đám đông khẽ. Bảo đảm
+> quyền sử dụng trước khi công khai.
 
 > Thay bằng nhạc thật: ghi đè cùng tên `.wav`, HOẶC dùng `.mp3` và sửa đường dẫn
 > trong `components/AudioController.tsx`. Nguồn miễn phí bản quyền gợi ý:
