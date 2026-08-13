@@ -31,5 +31,6 @@ export const NAV_LINKS = [
   { label: 'Hành trình', href: '#hero' },
   { label: 'Dòng thời gian', href: '#chapter-1911' },
   { label: 'Tư liệu', href: '#gallery' },
+  { label: 'Nghe & Xem', href: '#media' },
   { label: 'Về dự án', href: '#footer' },
 ];

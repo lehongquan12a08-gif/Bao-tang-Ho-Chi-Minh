@@ -13,6 +13,7 @@ import QuoteSection from '@/components/QuoteSection';
 import VietnamMapSection from '@/components/VietnamMapSection';
 import FinalSection from '@/components/FinalSection';
 import Gallery from '@/components/Gallery';
+import MediaSection from '@/components/MediaSection';
 import Footer from '@/components/Footer';
 
 export default function Home() {
@@ -73,6 +74,9 @@ export default function Home() {
 
         {/* 11 · Tư liệu — archive gallery */}
         <Gallery />
+
+        {/* 12 · Nghe & Xem — media */}
+        <MediaSection />
 
         {/* Ending */}
         <Footer />

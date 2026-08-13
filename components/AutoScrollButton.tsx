@@ -12,41 +12,54 @@ export default function AutoScrollButton() {
   const [progress, setProgress] = useState(0);
   const [atEnd, setAtEnd] = useState(false);
   const playingRef = useRef(false);
-  const fallbackRaf = useRef<number | null>(null);
-  const lastTs = useRef<number>(0);
+  const rafRef = useRef<number | null>(null);
+  const lastTs = useRef(0);
 
   const maxScroll = () =>
     document.documentElement.scrollHeight - window.innerHeight;
 
-  // --- stop / pause -----------------------------------------------------
+  const curScroll = () => {
+    const lenis = getLenis();
+    return lenis
+      ? ((lenis as unknown as { scroll: number }).scroll ?? window.scrollY)
+      : window.scrollY;
+  };
+
+  const stopRaf = () => {
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+  };
+
+  // --- stop / pause (always reliable: just stop our own loop) -----------
   const pause = useCallback(() => {
     playingRef.current = false;
     setPlaying(false);
-    if (fallbackRaf.current !== null) {
-      cancelAnimationFrame(fallbackRaf.current);
-      fallbackRaf.current = null;
-    }
-    const lenis = getLenis();
-    // Cancel a running Lenis tween by snapping its target to the current pos.
-    if (lenis) {
-      const cur = (lenis as unknown as { scroll: number }).scroll ?? window.scrollY;
-      lenis.scrollTo(cur, { immediate: true, force: true });
-    }
+    stopRaf();
   }, []);
 
-  // --- native rAF fallback (reduced-motion / no Lenis) ------------------
-  const fallbackStep = useCallback(
+  // --- the auto-scroll loop (drives Lenis one frame at a time) ----------
+  const step = useCallback(
     (ts: number) => {
       if (!playingRef.current) return;
-      const dt = lastTs.current ? (ts - lastTs.current) / 1000 : 0;
+      const dt = lastTs.current ? Math.min(0.05, (ts - lastTs.current) / 1000) : 0;
       lastTs.current = ts;
-      const next = window.scrollY + SPEED * dt;
-      window.scrollTo(0, next);
-      if (window.scrollY >= maxScroll() - 2) {
+
+      const lenis = getLenis();
+      const max = maxScroll();
+      const next = curScroll() + SPEED * dt;
+
+      if (next >= max) {
+        if (lenis) lenis.scrollTo(max, { immediate: true });
+        else window.scrollTo(0, max);
         pause();
         return;
       }
-      fallbackRaf.current = requestAnimationFrame(fallbackStep);
+      if (lenis) lenis.scrollTo(next, { immediate: true, force: true });
+      else window.scrollTo(0, next);
+
+      rafRef.current = requestAnimationFrame(step);
     },
     [pause]
   );
@@ -55,37 +68,17 @@ export default function AutoScrollButton() {
   const play = useCallback(() => {
     const max = maxScroll();
     const lenis = getLenis();
-    let start = lenis
-      ? ((lenis as unknown as { scroll: number }).scroll ?? window.scrollY)
-      : window.scrollY;
-
     // If we're already at the very bottom, restart from the top.
-    if (start >= max - 4) {
+    if (curScroll() >= max - 4) {
       if (lenis) lenis.scrollTo(0, { immediate: true });
       else window.scrollTo(0, 0);
-      start = 0;
     }
-
     playingRef.current = true;
     setPlaying(true);
-
-    const remaining = Math.max(0, max - start);
-    const duration = Math.max(4, remaining / SPEED);
-
-    if (lenis) {
-      lenis.scrollTo(max, {
-        duration,
-        easing: (t: number) => t, // linear = steady cinematic glide
-        onComplete: () => {
-          playingRef.current = false;
-          setPlaying(false);
-        },
-      });
-    } else {
-      lastTs.current = 0;
-      fallbackRaf.current = requestAnimationFrame(fallbackStep);
-    }
-  }, [fallbackStep]);
+    lastTs.current = 0;
+    stopRaf();
+    rafRef.current = requestAnimationFrame(step);
+  }, [step]);
 
   const toggle = useCallback(() => {
     if (playingRef.current) pause();
@@ -108,16 +101,12 @@ export default function AutoScrollButton() {
     };
 
     // Any genuine user input cancels autoplay (our programmatic scroll does
-    // NOT emit these events, so they are always user-initiated).
+    // NOT emit wheel/touch/key events, so these are always user-initiated).
     const onUserIntent = () => {
       if (playingRef.current) pause();
     };
     const onKey = (e: KeyboardEvent) => {
-      if (
-        ['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End', ' '].includes(
-          e.key
-        )
-      ) {
+      if (['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End', ' '].includes(e.key)) {
         onUserIntent();
       }
     };
@@ -135,7 +124,7 @@ export default function AutoScrollButton() {
       window.removeEventListener('wheel', onUserIntent);
       window.removeEventListener('touchstart', onUserIntent);
       window.removeEventListener('keydown', onKey);
-      if (fallbackRaf.current !== null) cancelAnimationFrame(fallbackRaf.current);
+      stopRaf();
     };
   }, [pause]);
 
