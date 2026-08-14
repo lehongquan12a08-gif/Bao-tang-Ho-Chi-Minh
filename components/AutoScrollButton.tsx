@@ -4,11 +4,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { getLenis } from '@/lib/lenisStore';
 import { narrationState } from '@/lib/narrationState';
 
-// Auto-scroll pace (px/s). When narration is on, follow the voice: creep while
-// it speaks, glide through the silent gaps. Otherwise a steady cinematic pace.
-const SPEED = 240;
-const SPEED_VOICE = 0; // HOLD while a voice is speaking (finish reading first)
-const SPEED_GAP = 520; // then glide through the silent gap to the next chapter
+// Auto-scroll pace. With sound ON the scroll is LOCKED to the narration audio
+// clock (see step) so every chapter glides through in exactly its voiceover and
+// hands off seamlessly; SPEED_GAP only carries the silent interludes between
+// narrated chapters. With sound OFF, a steady cinematic pace throughout.
+const SPEED = 240; // px/s — sound off
+const SPEED_GAP = 300; // px/s — silent interludes while sound is on
 const RING = 2 * Math.PI * 15; // circumference for r=15 progress ring
 
 export default function AutoScrollButton() {
@@ -43,6 +44,12 @@ export default function AutoScrollButton() {
     stopRaf();
   }, []);
 
+  const scrollToY = (y: number) => {
+    const lenis = getLenis();
+    if (lenis) lenis.scrollTo(y, { immediate: true, force: true });
+    else window.scrollTo(0, y);
+  };
+
   // --- the auto-scroll loop (drives Lenis one frame at a time) ----------
   const step = useCallback(
     (ts: number) => {
@@ -50,24 +57,42 @@ export default function AutoScrollButton() {
       const dt = lastTs.current ? Math.min(0.05, (ts - lastTs.current) / 1000) : 0;
       lastTs.current = ts;
 
-      const lenis = getLenis();
       const max = maxScroll();
-      const speed = narrationState.enabled
-        ? narrationState.speaking
-          ? SPEED_VOICE
-          : SPEED_GAP
-        : SPEED;
-      const next = curScroll() + speed * dt;
+      const cur = curScroll();
 
+      // 1) VOICE-LOCKED SCRUB — while a chapter's narration plays, tie the scroll
+      //    position to the audio clock. `activeId` names the chapter section and
+      //    `progress` (0..1) is its audio playhead, so the scroll glides across
+      //    the whole section in exactly the voiceover's length; the section is
+      //    framed the same way every time and the hand-off to the next chapter is
+      //    seamless (the sections are contiguous, so end of one == start of next).
+      if (narrationState.enabled && narrationState.playing && narrationState.activeId) {
+        const el = document.getElementById(narrationState.activeId);
+        if (el) {
+          const vh = window.innerHeight;
+          const startY = el.offsetTop - vh / 2; // where this section takes centre
+          const target = Math.min(max, Math.max(0, startY + el.offsetHeight * narrationState.progress));
+          const nextY = target > cur ? target : cur; // never snap backwards
+          scrollToY(nextY);
+          if (nextY >= max - 2) {
+            pause();
+            return;
+          }
+          rafRef.current = requestAnimationFrame(step);
+          return;
+        }
+      }
+
+      // 2) STEADY GLIDE — silent interludes between narrated chapters (sound on),
+      //    or the whole journey when sound is off.
+      const speed = narrationState.enabled ? SPEED_GAP : SPEED;
+      const next = cur + speed * dt;
       if (next >= max) {
-        if (lenis) lenis.scrollTo(max, { immediate: true });
-        else window.scrollTo(0, max);
+        scrollToY(max);
         pause();
         return;
       }
-      if (lenis) lenis.scrollTo(next, { immediate: true, force: true });
-      else window.scrollTo(0, next);
-
+      scrollToY(next);
       rafRef.current = requestAnimationFrame(step);
     },
     [pause]

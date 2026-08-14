@@ -76,6 +76,7 @@ export default function AudioController() {
   // narration (per-chapter voiceover, played as segments of 2 files)
   const narrRef = useRef<Map<1 | 2, HTMLAudioElement>>(new Map());
   const narrActiveRef = useRef<string | null>(null);
+  const narrStartRef = useRef(0);
   const narrEndRef = useRef(0);
   const narrElRef = useRef<HTMLAudioElement | null>(null);
   const narrCtxRef = useRef<AudioContext | null>(null);
@@ -179,11 +180,17 @@ export default function AudioController() {
     if (a.currentTime >= narrEndRef.current) {
       a.pause();
       stopNarrWatch();
-      // segment finished — release the voice flag right away so the auto-scroll
-      // resumes (apply() is scroll-driven and won't run while the page is held)
+      // segment finished — publish the final state so the auto-scroll moves on
+      // (apply() is scroll-driven and won't run while the page barely moves)
+      narrationState.progress = 1;
+      narrationState.playing = false;
       narrationState.speaking = false;
       return;
     }
+    // publish the audio clock so the auto-scroll can lock the scroll to the voice
+    const dur = narrEndRef.current - narrStartRef.current;
+    narrationState.progress = dur > 0 ? clamp((a.currentTime - narrStartRef.current) / dur) : 0;
+    narrationState.playing = true;
     narrationState.speaking = true;
     narrWatchRef.current = requestAnimationFrame(narrWatch);
   }, [stopNarrWatch]);
@@ -213,6 +220,7 @@ export default function AudioController() {
         });
         if (a) {
           narrActiveRef.current = narrCue.id;
+          narrStartRef.current = narrCue.start;
           narrEndRef.current = narrCue.end;
           try {
             a.currentTime = narrCue.start;
@@ -223,6 +231,9 @@ export default function AudioController() {
           narrCtxRef.current?.resume().catch(() => {});
           a.play().catch(() => {});
           narrElRef.current = a;
+          narrationState.activeId = narrCue.id;
+          narrationState.progress = 0;
+          narrationState.playing = true;
           stopNarrWatch();
           narrWatchRef.current = requestAnimationFrame(narrWatch);
         }
@@ -231,6 +242,8 @@ export default function AudioController() {
       narrRef.current.forEach((a) => a.pause());
       narrActiveRef.current = null;
       narrElRef.current = null;
+      narrationState.activeId = null;
+      narrationState.playing = false;
       stopNarrWatch();
     }
 
@@ -264,8 +277,10 @@ export default function AudioController() {
       narrElRef.current.pause();
       stopNarrWatch();
     }
-    const voice = declActive || (narrElRef.current ? !narrElRef.current.paused : false);
-    narrationState.speaking = voice; // let the auto-scroll follow the voice
+    const narrPlaying = narrElRef.current ? !narrElRef.current.paused : false;
+    const voice = declActive || narrPlaying;
+    narrationState.speaking = voice; // any audible voice
+    narrationState.playing = narrPlaying; // only the narration drives the scrub
 
     // 3) set SFX volumes — supporting ambience ducks under a voice ---------
     for (const s of SFX) {
@@ -333,6 +348,9 @@ export default function AudioController() {
     declFiredRef.current = false;
     stopNarrWatch();
     narrationState.speaking = false;
+    narrationState.playing = false;
+    narrationState.activeId = null;
+    narrationState.progress = 0;
     narrationState.enabled = false;
   }, [stopNarrWatch]);
 
@@ -430,6 +448,8 @@ export default function AudioController() {
         narrElRef.current = null;
         declFiredRef.current = false;
         narrationState.speaking = false;
+        narrationState.playing = false;
+        narrationState.activeId = null;
         stopNarrWatch();
       } else {
         ambientRef.current?.play().catch(() => {});
