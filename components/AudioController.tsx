@@ -3,12 +3,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { NARRATION, NARRATION_FILES, type NarrationCue } from '@/data/narration';
 
-// per-chapter voiceover volume (relative to master) — kept loud & clear
-const NARR_VOL = 1.0;
+// The voice recordings are a bit quiet, so lift them with a Web Audio gain
+// (can exceed 1.0, unlike element.volume). Master slider still scales it.
+const NARR_BOOST = 2.1;
 // how much the supporting sounds (music + waves/wind/crowd) drop while a voice
 // (narration or the Tuyên ngôn recording) is speaking
-const AMBIENT_DUCK = 0.22;
-const SFX_DUCK = 0.28;
+const AMBIENT_DUCK = 0.18;
+const SFX_DUCK = 0.22;
 
 // Background music (loops) + per-chapter ambience. Some clips are `loop:false`
 // one-shots (e.g. the real Tuyên ngôn recording) that fire inside a scroll
@@ -71,6 +72,8 @@ export default function AudioController() {
   const narrActiveRef = useRef<string | null>(null);
   const narrEndRef = useRef(0);
   const narrElRef = useRef<HTMLAudioElement | null>(null);
+  const narrCtxRef = useRef<AudioContext | null>(null);
+  const narrWatchRef = useRef<number | null>(null);
 
   // create audio elements once
   useEffect(() => {
@@ -90,18 +93,38 @@ export default function AudioController() {
     }
     sfxRef.current = m;
 
-    // narration files (2 parts) — stop each at its current segment's end
+    // narration files (2 parts)
     const nm = new Map<1 | 2, HTMLAudioElement>();
     ([1, 2] as const).forEach((part) => {
       const a = new Audio(NARRATION_FILES[part]);
       a.preload = 'auto';
       a.volume = 0;
-      a.addEventListener('timeupdate', () => {
-        if (a === narrElRef.current && a.currentTime >= narrEndRef.current) a.pause();
-      });
       nm.set(part, a);
     });
     narrRef.current = nm;
+
+    // route narration through a Web Audio gain so the quiet voice can be lifted
+    try {
+      const AC =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (AC) {
+        const ctx = new AC();
+        narrCtxRef.current = ctx;
+        // shared compressor tames peaks so the boost doesn't distort
+        const comp = ctx.createDynamicsCompressor();
+        comp.connect(ctx.destination);
+        nm.forEach((a) => {
+          const src = ctx.createMediaElementSource(a);
+          const g = ctx.createGain();
+          g.gain.value = NARR_BOOST;
+          src.connect(g);
+          g.connect(comp);
+        });
+      }
+    } catch {
+      /* Web Audio unavailable → narration plays at element volume */
+    }
 
     let v = 0.8;
     try {
@@ -119,6 +142,27 @@ export default function AudioController() {
       nm.forEach((a) => a.pause());
     };
   }, []);
+
+  // stop the active narration exactly at its segment end (frame-accurate)
+  const stopNarrWatch = useCallback(() => {
+    if (narrWatchRef.current != null) {
+      cancelAnimationFrame(narrWatchRef.current);
+      narrWatchRef.current = null;
+    }
+  }, []);
+  const narrWatch = useCallback(() => {
+    const a = narrElRef.current;
+    if (!a || a.paused) {
+      stopNarrWatch();
+      return;
+    }
+    if (a.currentTime >= narrEndRef.current) {
+      a.pause();
+      stopNarrWatch();
+      return;
+    }
+    narrWatchRef.current = requestAnimationFrame(narrWatch);
+  }, [stopNarrWatch]);
 
   // update which ambience plays, honouring scroll `range` + master volume + duck
   const apply = useCallback(() => {
@@ -151,15 +195,19 @@ export default function AudioController() {
           } catch {
             /* ignore */
           }
-          a.volume = clamp(NARR_VOL * master);
+          a.volume = clamp(master); // Web Audio gain adds the boost on top
+          narrCtxRef.current?.resume().catch(() => {});
           a.play().catch(() => {});
           narrElRef.current = a;
+          stopNarrWatch();
+          narrWatchRef.current = requestAnimationFrame(narrWatch);
         }
       }
     } else if (narrActiveRef.current) {
       narrRef.current.forEach((a) => a.pause());
       narrActiveRef.current = null;
       narrElRef.current = null;
+      stopNarrWatch();
     }
     const narrPlaying = !!(narrElRef.current && !narrElRef.current.paused);
 
@@ -208,7 +256,7 @@ export default function AudioController() {
       ambTargetRef.current = ambTarget;
       fadeTo(ambientRef.current, ambTarget, 700);
     }
-  }, []);
+  }, [narrWatch, stopNarrWatch]);
 
   const enable = useCallback(() => {
     enabledRef.current = true;
@@ -219,6 +267,7 @@ export default function AudioController() {
     } catch {
       /* ignore */
     }
+    narrCtxRef.current?.resume().catch(() => {});
     ambTargetRef.current = -1; // force ambient re-fade
     apply();
   }, [apply]);
@@ -236,7 +285,8 @@ export default function AudioController() {
     narrRef.current.forEach((a) => a.pause());
     narrActiveRef.current = null;
     narrElRef.current = null;
-  }, []);
+    stopNarrWatch();
+  }, [stopNarrWatch]);
 
   // volume slider — apply instantly to whatever is playing
   const onVolume = useCallback((v: number) => {
@@ -261,7 +311,7 @@ export default function AudioController() {
       }
     }
     if (narrElRef.current && !narrElRef.current.paused) {
-      narrElRef.current.volume = clamp(NARR_VOL * v);
+      narrElRef.current.volume = clamp(v); // Web Audio gain applies the boost
     }
   }, []);
 
@@ -320,6 +370,7 @@ export default function AudioController() {
         narrRef.current.forEach((a) => a.pause());
         narrActiveRef.current = null; // replay current chapter's line on return
         narrElRef.current = null;
+        stopNarrWatch();
       } else {
         ambientRef.current?.play().catch(() => {});
         apply();
@@ -327,7 +378,7 @@ export default function AudioController() {
     };
     document.addEventListener('visibilitychange', onVis);
     return () => document.removeEventListener('visibilitychange', onVis);
-  }, [apply]);
+  }, [apply, stopNarrWatch]);
 
   return (
     <>
