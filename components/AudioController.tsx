@@ -12,7 +12,7 @@ const NARR_BOOST = 2.8;
 const VOICE_MAKEUP = 1.5;
 // the Tuyên ngôn recording is also a voice — lift it close to the narration
 const DECL_SRC = '/audio/sfx/declaration-1945.mp3';
-const DECL_BOOST = 2.5;
+const DECL_BOOST = 1.25;
 // the section fraction band the Tuyên ngôn recording scrubs — the Ba Đình photo
 // act, held on screen while Bác reads. It only fires AFTER the 1945 narration
 // has finished (its scroll band ends at 0.46), so the two voices never overlap.
