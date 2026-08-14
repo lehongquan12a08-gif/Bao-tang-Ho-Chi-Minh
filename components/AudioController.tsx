@@ -3,8 +3,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { NARRATION, NARRATION_FILES, type NarrationCue } from '@/data/narration';
 
-// per-chapter voiceover volume (relative to master)
-const NARR_VOL = 0.98;
+// per-chapter voiceover volume (relative to master) — kept loud & clear
+const NARR_VOL = 1.0;
+// how much the supporting sounds (music + waves/wind/crowd) drop while a voice
+// (narration or the Tuyên ngôn recording) is speaking
+const AMBIENT_DUCK = 0.22;
+const SFX_DUCK = 0.28;
 
 // Background music (loops) + per-chapter ambience. Some clips are `loop:false`
 // one-shots (e.g. the real Tuyên ngôn recording) that fire inside a scroll
@@ -14,15 +18,17 @@ const NARR_VOL = 0.98;
 // instead of a cached copy of the same filename.
 const V = 'v=5';
 const AMBIENT_SRC = `/audio/ambient.wav?${V}`;
-const AMBIENT_VOL = 0.22;
+const AMBIENT_VOL = 0.18;
 
-type Sfx = { id: string; src: string; vol: number; loop?: boolean; range?: [number, number] };
+// `voice: true` = a spoken clip (kept loud, ducks everything else).
+type Sfx = { id: string; src: string; vol: number; loop?: boolean; range?: [number, number]; voice?: boolean };
 const SFX: Sfx[] = [
-  { id: 'chapter-1911', src: `/audio/sfx/ship-1911.wav?${V}`, vol: 0.3 },
-  { id: 'chapter-1941', src: `/audio/sfx/mountain-1941.wav?${V}`, vol: 0.3 },
-  { id: 'chapter-1945', src: `/audio/sfx/crowd-1945.wav?${V}`, vol: 0.12 },
-  // Bác đọc Tuyên ngôn — plays once when the Ba Đình scene is on screen.
-  { id: 'chapter-1945', src: '/audio/sfx/declaration-1945.mp3', vol: 0.9, loop: false, range: [0.44, 0.74] },
+  // supporting ambience — deliberately quiet
+  { id: 'chapter-1911', src: `/audio/sfx/ship-1911.wav?${V}`, vol: 0.16 },
+  { id: 'chapter-1941', src: `/audio/sfx/mountain-1941.wav?${V}`, vol: 0.14 },
+  { id: 'chapter-1945', src: `/audio/sfx/crowd-1945.wav?${V}`, vol: 0.09 },
+  // Bác đọc Tuyên ngôn — a voice clip, plays once on the Ba Đình scene.
+  { id: 'chapter-1945', src: '/audio/sfx/declaration-1945.mp3', vol: 1.0, loop: false, voice: true, range: [0.44, 0.74] },
 ];
 
 const LS_KEY = 'httcb-audio';
@@ -119,36 +125,8 @@ export default function AudioController() {
     if (!enabledRef.current) return;
     const master = masterRef.current;
     const mid = window.innerHeight / 2;
-    let ducking = false;
 
-    for (const s of SFX) {
-      const a = sfxRef.current.get(s.src);
-      if (!a) continue;
-      const el = document.getElementById(s.id);
-      let active = false;
-      if (el) {
-        if (s.range) {
-          const scrollable = el.offsetHeight - window.innerHeight;
-          const scrolled = -el.getBoundingClientRect().top;
-          const p = scrollable > 0 ? scrolled / scrollable : 0;
-          active = p >= s.range[0] && p <= s.range[1];
-        } else {
-          const r = el.getBoundingClientRect();
-          active = r.top <= mid && r.bottom >= mid;
-        }
-      }
-      if (active) {
-        if (s.loop === false) {
-          ducking = true;
-          if (a.paused) a.currentTime = 0;
-        }
-        fadeTo(a, s.vol * master, s.loop === false ? 300 : 1400);
-      } else {
-        fadeTo(a, 0, 900);
-      }
-    }
-
-    // --- narration: play the current chapter's voiceover segment ---------
+    // 1) narration — play the current chapter's voiceover segment ----------
     let narrCue: NarrationCue | null = null;
     for (const c of NARRATION) {
       const el = document.getElementById(c.id);
@@ -183,10 +161,49 @@ export default function AudioController() {
       narrActiveRef.current = null;
       narrElRef.current = null;
     }
-    if (narrElRef.current && !narrElRef.current.paused) ducking = true;
+    const narrPlaying = !!(narrElRef.current && !narrElRef.current.paused);
 
-    duckRef.current = ducking;
-    const ambTarget = AMBIENT_VOL * master * (ducking ? 0.3 : 1);
+    // 2) which SFX are active? (and is a voice clip among them?) -----------
+    const activeMap = new Map<string, boolean>();
+    let declActive = false;
+    for (const s of SFX) {
+      const el = document.getElementById(s.id);
+      let active = false;
+      if (el) {
+        if (s.range) {
+          const scrollable = el.offsetHeight - window.innerHeight;
+          const scrolled = -el.getBoundingClientRect().top;
+          const p = scrollable > 0 ? scrolled / scrollable : 0;
+          active = p >= s.range[0] && p <= s.range[1];
+        } else {
+          const r = el.getBoundingClientRect();
+          active = r.top <= mid && r.bottom >= mid;
+        }
+      }
+      activeMap.set(s.src, active);
+      if (active && s.voice) declActive = true;
+    }
+    const voice = narrPlaying || declActive; // any spoken audio playing
+
+    // 3) set SFX volumes — supporting ambience ducks under a voice ---------
+    for (const s of SFX) {
+      const a = sfxRef.current.get(s.src);
+      if (!a) continue;
+      if (activeMap.get(s.src)) {
+        if (s.voice) {
+          if (a.paused) a.currentTime = 0;
+          fadeTo(a, s.vol * master, 300);
+        } else {
+          fadeTo(a, s.vol * master * (voice ? SFX_DUCK : 1), 700);
+        }
+      } else {
+        fadeTo(a, 0, 900);
+      }
+    }
+
+    // 4) background music --------------------------------------------------
+    duckRef.current = voice;
+    const ambTarget = AMBIENT_VOL * master * (voice ? AMBIENT_DUCK : 1);
     if (ambientRef.current && Math.abs(ambTarget - ambTargetRef.current) > 0.001) {
       ambTargetRef.current = ambTarget;
       fadeTo(ambientRef.current, ambTarget, 700);
@@ -231,13 +248,17 @@ export default function AudioController() {
       /* ignore */
     }
     if (!enabledRef.current) return;
+    const d = duckRef.current;
     if (ambientRef.current && !ambientRef.current.paused) {
-      ambientRef.current.volume = clamp(AMBIENT_VOL * v * (duckRef.current ? 0.3 : 1));
-      ambTargetRef.current = AMBIENT_VOL * v * (duckRef.current ? 0.3 : 1);
+      const t = AMBIENT_VOL * v * (d ? AMBIENT_DUCK : 1);
+      ambientRef.current.volume = clamp(t);
+      ambTargetRef.current = t;
     }
     for (const s of SFX) {
       const a = sfxRef.current.get(s.src);
-      if (a && !a.paused) a.volume = clamp(s.vol * v);
+      if (a && !a.paused) {
+        a.volume = clamp(s.voice ? s.vol * v : s.vol * v * (d ? SFX_DUCK : 1));
+      }
     }
     if (narrElRef.current && !narrElRef.current.paused) {
       narrElRef.current.volume = clamp(NARR_VOL * v);
