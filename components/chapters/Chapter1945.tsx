@@ -89,15 +89,18 @@ export default function Chapter1945() {
             Quảng trường Ba Đình
           </p>
 
-          {/* centrepiece: Tuyên ngôn Độc lập — centred, always fits the viewport */}
-          <div className="s-decl will-transform absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/images/photos/declaration-1945.webp"
-              alt="Chủ tịch Hồ Chí Minh đọc Tuyên ngôn Độc lập, khai sinh nước Việt Nam Dân chủ Cộng hòa"
-              className="h-auto max-h-[62vh] w-auto max-w-[52vw] object-contain"
-              style={{ boxShadow: '0 30px 80px rgba(0,0,0,0.75)' }}
-            />
+          {/* centrepiece: Tuyên ngôn Độc lập — outer div centres (untouched by
+              GSAP), inner .s-decl is animated so centring never gets overridden */}
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+            <div className="s-decl will-transform">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/images/photos/declaration-1945.webp"
+                alt="Chủ tịch Hồ Chí Minh đọc Tuyên ngôn Độc lập, khai sinh nước Việt Nam Dân chủ Cộng hòa"
+                className="h-auto max-h-[62vh] w-auto max-w-[52vw] object-contain"
+                style={{ boxShadow: '0 30px 80px rgba(0,0,0,0.75)' }}
+              />
+            </div>
           </div>
         </div>
 

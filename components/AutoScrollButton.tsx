@@ -2,9 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { getLenis } from '@/lib/lenisStore';
+import { narrationState } from '@/lib/narrationState';
 
-// Cinematic auto-scroll pace, in pixels per second (documentary-slow).
+// Auto-scroll pace (px/s). When narration is on, follow the voice: creep while
+// it speaks, glide through the silent gaps. Otherwise a steady cinematic pace.
 const SPEED = 240;
+const SPEED_VOICE = 90; // while a voice is speaking
+const SPEED_GAP = 520; // through the silent gaps between narrated chapters
 const RING = 2 * Math.PI * 15; // circumference for r=15 progress ring
 
 export default function AutoScrollButton() {
@@ -48,7 +52,12 @@ export default function AutoScrollButton() {
 
       const lenis = getLenis();
       const max = maxScroll();
-      const next = curScroll() + SPEED * dt;
+      const speed = narrationState.enabled
+        ? narrationState.speaking
+          ? SPEED_VOICE
+          : SPEED_GAP
+        : SPEED;
+      const next = curScroll() + speed * dt;
 
       if (next >= max) {
         if (lenis) lenis.scrollTo(max, { immediate: true });

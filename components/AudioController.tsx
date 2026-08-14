@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { NARRATION, NARRATION_FILES, type NarrationCue } from '@/data/narration';
+import { narrationState } from '@/lib/narrationState';
 
 // The voice recordings are a bit quiet, so lift them with a Web Audio gain
 // (can exceed 1.0, unlike element.volume). Master slider still scales it.
@@ -221,7 +222,6 @@ export default function AudioController() {
       narrElRef.current = null;
       stopNarrWatch();
     }
-    const narrPlaying = !!(narrElRef.current && !narrElRef.current.paused);
 
     // 2) which SFX are active? (and is a voice clip among them?) -----------
     const activeMap = new Map<string, boolean>();
@@ -243,7 +243,13 @@ export default function AudioController() {
       activeMap.set(s.src, active);
       if (active && s.voice) declActive = true;
     }
-    const voice = narrPlaying || declActive; // any spoken audio playing
+    // don't stack two voices: the Tuyên ngôn recording takes over from narration
+    if (declActive && narrElRef.current && !narrElRef.current.paused) {
+      narrElRef.current.pause();
+      stopNarrWatch();
+    }
+    const voice = declActive || (narrElRef.current ? !narrElRef.current.paused : false);
+    narrationState.speaking = voice; // let the auto-scroll follow the voice
 
     // 3) set SFX volumes — supporting ambience ducks under a voice ---------
     for (const s of SFX) {
@@ -280,6 +286,7 @@ export default function AudioController() {
       /* ignore */
     }
     narrCtxRef.current?.resume().catch(() => {});
+    narrationState.enabled = true;
     ambTargetRef.current = -1; // force ambient re-fade
     apply();
   }, [apply]);
@@ -298,6 +305,8 @@ export default function AudioController() {
     narrActiveRef.current = null;
     narrElRef.current = null;
     stopNarrWatch();
+    narrationState.speaking = false;
+    narrationState.enabled = false;
   }, [stopNarrWatch]);
 
   // volume slider — apply instantly to whatever is playing
