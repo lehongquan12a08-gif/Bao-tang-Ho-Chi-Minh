@@ -16,4 +16,5 @@ export const narrationState = {
   playing: false, // the driving voice is actively advancing (not paused/ended)
   scroll0: 0, // start of the section fraction band this voice scrubs
   scroll1: 1, // end of the section fraction band this voice scrubs
+  volume: 0.8, // master volume (0..1), so UI sounds can follow the slider
 };

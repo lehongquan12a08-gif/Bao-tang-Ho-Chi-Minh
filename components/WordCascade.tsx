@@ -2,6 +2,7 @@
 
 import { useRef } from 'react';
 import { gsap, useGSAP } from '@/lib/gsap';
+import { playChime } from '@/lib/uiSound';
 
 interface WordCascadeProps {
   words: string[];
@@ -46,6 +47,8 @@ export default function WordCascade({
 
       items.forEach((el, i) => {
         const at = i * 1;
+        // a soft chime as each word materialises (only when sound is on)
+        tl.call(playChime, [i], at + 0.08);
         tl.fromTo(
           el,
           { opacity: 0, scale: 0.82, filter: 'blur(6px)' },

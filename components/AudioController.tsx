@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { NARRATION, NARRATION_FILES, type NarrationCue } from '@/data/narration';
 import { narrationState } from '@/lib/narrationState';
+import { initUiSound } from '@/lib/uiSound';
 
 // The voice recordings are a bit quiet, so lift them with a Web Audio gain
 // (can exceed 1.0, unlike element.volume). Master slider still scales it.
@@ -160,6 +161,7 @@ export default function AudioController() {
       /* ignore */
     }
     masterRef.current = v;
+    narrationState.volume = v;
     setVol(v);
 
     return () => {
@@ -347,6 +349,8 @@ export default function AudioController() {
     }
     narrCtxRef.current?.resume().catch(() => {});
     narrationState.enabled = true;
+    narrationState.volume = masterRef.current;
+    initUiSound();
     ambTargetRef.current = -1; // force ambient re-fade
     apply();
   }, [apply]);
@@ -376,6 +380,7 @@ export default function AudioController() {
   // volume slider — apply instantly to whatever is playing
   const onVolume = useCallback((v: number) => {
     masterRef.current = v;
+    narrationState.volume = v;
     setVol(v);
     try {
       localStorage.setItem(LS_VOL, String(v));

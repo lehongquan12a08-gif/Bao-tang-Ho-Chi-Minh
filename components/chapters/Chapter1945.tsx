@@ -4,6 +4,7 @@ import { useRef } from 'react';
 import { gsap, useGSAP } from '@/lib/gsap';
 import GoldStar from '@/components/objects/GoldStar';
 import TextureBg from '@/components/TextureBg';
+import { playChime } from '@/lib/uiSound';
 
 /**
  * 1945 — three cleanly separated acts (no black gaps, nothing overlaps):
@@ -27,8 +28,11 @@ export default function Chapter1945() {
       });
 
       // ---- Act A : the date builds and holds (no flashing/black) ---------
-      tl.fromTo(q('.g-02'), { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.04 }, 0.04)
+      tl.call(playChime, [0], 0.04)
+        .fromTo(q('.g-02'), { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.04 }, 0.04)
+        .call(playChime, [1], 0.1)
         .fromTo(q('.g-09'), { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.04 }, 0.1)
+        .call(playChime, [2], 0.16)
         .fromTo(q('.g-1945'), { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.04 }, 0.16)
         // whole date holds on screen 0.20 → 0.32, then lifts away
         .to(q('.date-line'), { opacity: 0, y: -30, duration: 0.05 }, 0.33);
