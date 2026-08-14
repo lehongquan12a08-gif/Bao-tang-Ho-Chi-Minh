@@ -6,6 +6,9 @@ import { NARRATION, NARRATION_FILES, type NarrationCue } from '@/data/narration'
 // The voice recordings are a bit quiet, so lift them with a Web Audio gain
 // (can exceed 1.0, unlike element.volume). Master slider still scales it.
 const NARR_BOOST = 2.1;
+// the Tuyên ngôn recording is also a voice — lift it close to the narration
+const DECL_SRC = '/audio/sfx/declaration-1945.mp3';
+const DECL_BOOST = 1.9;
 // how much the supporting sounds (music + waves/wind/crowd) drop while a voice
 // (narration or the Tuyên ngôn recording) is speaking
 const AMBIENT_DUCK = 0.18;
@@ -29,7 +32,7 @@ const SFX: Sfx[] = [
   { id: 'chapter-1941', src: `/audio/sfx/mountain-1941.wav?${V}`, vol: 0.14 },
   { id: 'chapter-1945', src: `/audio/sfx/crowd-1945.wav?${V}`, vol: 0.09 },
   // Bác đọc Tuyên ngôn — a voice clip, plays once on the Ba Đình scene.
-  { id: 'chapter-1945', src: '/audio/sfx/declaration-1945.mp3', vol: 1.0, loop: false, voice: true, range: [0.44, 0.74] },
+  { id: 'chapter-1945', src: DECL_SRC, vol: 1.0, loop: false, voice: true, range: [0.44, 0.74] },
 ];
 
 const LS_KEY = 'httcb-audio';
@@ -121,6 +124,15 @@ export default function AudioController() {
           src.connect(g);
           g.connect(comp);
         });
+        // route the Tuyên ngôn recording through the same boost (a bit lower)
+        const decl = m.get(DECL_SRC);
+        if (decl) {
+          const dsrc = ctx.createMediaElementSource(decl);
+          const dg = ctx.createGain();
+          dg.gain.value = DECL_BOOST;
+          dsrc.connect(dg);
+          dg.connect(comp);
+        }
       }
     } catch {
       /* Web Audio unavailable → narration plays at element volume */
