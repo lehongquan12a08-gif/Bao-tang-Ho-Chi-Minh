@@ -47,56 +47,63 @@ export default function MilestoneChapter({ milestone: m }: { milestone: Mileston
       const tl = gsap.timeline({
         scrollTrigger: { trigger: root.current, start: 'top top', end: 'bottom bottom', scrub: 1 },
       });
-      tl.to(q('.m-bgphoto'), { scale: 1.1, ease: 'none' }, 0)
-        .to(q('.m-symbol'), { yPercent: -8, rotate: 4, ease: 'none' }, 0)
+      // gentle Ken Burns inside the frame — never crops faces (object-contain)
+      tl.fromTo(q('.m-bgphoto'), { scale: 1.04 }, { scale: 1, ease: 'none' }, 0)
+        .fromTo(q('.m-frame'), { opacity: 0, y: 40 }, { opacity: 1, y: 0 }, 0.04)
         .fromTo(q('.m-year'), { opacity: 0, y: 50 }, { opacity: 1, y: 0 }, 0.08)
-        .fromTo(q('.m-head'), { opacity: 0, y: 30 }, { opacity: 1, y: 0 }, 0.28)
-        .fromTo(q('.m-key'), { opacity: 0, scale: 1.15 }, { opacity: 1, scale: 1 }, 0.44)
-        .fromTo(q('.m-cap'), { opacity: 0 }, { opacity: 1 }, 0.6);
+        .fromTo(q('.m-head'), { opacity: 0, y: 30 }, { opacity: 1, y: 0 }, 0.26)
+        .fromTo(q('.m-key'), { opacity: 0, scale: 1.15 }, { opacity: 1, scale: 1 }, 0.42)
+        .fromTo(q('.m-cap'), { opacity: 0 }, { opacity: 1 }, 0.56);
     },
     { scope: root }
   );
 
   return (
     <section id={m.id} ref={root} className="relative h-[240vh]" style={{ background: m.background }}>
-      <div className="sticky top-0 flex h-screen items-center justify-center overflow-hidden px-6">
-        {/* symbolic layer (fallback / atmosphere) */}
-        <TextureBg src="/images/stars.webp" className="opacity-30" />
-        <div className="m-symbol will-transform pointer-events-none absolute left-1/2 top-[42%] -translate-x-1/2 -translate-y-1/2">
-          <Symbol kind={m.symbol} />
-        </div>
+      <div className="sticky top-0 flex h-screen items-center overflow-hidden">
+        <TextureBg src="/images/stars.webp" className="opacity-20" />
 
-        {/* real archival photo (optional slot) — hidden if the file is absent */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={m.image}
-          alt=""
-          className="m-bgphoto will-transform pointer-events-none absolute inset-0 z-[1] h-full w-full object-cover opacity-45"
-          style={{ filter: 'grayscale(0.2) contrast(1.05) brightness(0.7)' }}
-          onError={(e) => {
-            (e.currentTarget as HTMLImageElement).style.display = 'none';
-          }}
-        />
+        <div className="relative z-20 mx-auto flex w-full max-w-6xl flex-col items-center gap-10 px-6 md:flex-row md:gap-16 md:px-10">
+          {/* text — left on desktop, below on mobile */}
+          <div className="order-2 flex-1 text-center md:order-1 md:text-left">
+            <p className="eyebrow mb-5 text-vn-gold-antique">{m.eyebrow}</p>
+            <h2 className="m-year will-transform font-serif-hist text-7xl font-black leading-none text-vn-ivory text-glow-gold md:text-8xl">
+              {m.year}
+            </h2>
+            <h3 className="m-head will-transform mt-4 font-display text-xl font-semibold uppercase tracking-[0.14em] text-vn-ivory md:text-3xl">
+              {m.heading}
+            </h3>
+            <p className="m-key will-transform mt-6 font-serif-hist text-2xl font-black uppercase tracking-[0.2em] text-vn-gold md:text-4xl">
+              {m.keyText}
+            </p>
+            <p className="m-cap will-transform mx-auto mt-7 max-w-xl font-serif-hist text-base italic leading-relaxed text-vn-ivory/75 md:mx-0 md:text-lg">
+              {m.caption}
+            </p>
+          </div>
 
-        {/* scrim */}
-        <div
-          className="pointer-events-none absolute inset-0 z-[2]"
-          style={{ background: 'radial-gradient(ellipse at 50% 46%, rgba(8,8,8,0.35) 0%, rgba(8,8,8,0.55) 55%, rgba(8,8,8,0.92) 100%)' }}
-        />
-
-        {/* text */}
-        <div className="relative z-20 flex flex-col items-center text-center">
-          <p className="eyebrow mb-5 text-vn-gold-antique">{m.eyebrow}</p>
-          <h2 className="m-year will-transform headline-year text-vn-ivory text-glow-gold">{m.year}</h2>
-          <h3 className="m-head will-transform mt-4 max-w-3xl font-display text-2xl font-semibold uppercase tracking-[0.14em] text-vn-ivory md:text-4xl">
-            {m.heading}
-          </h3>
-          <p className="m-key will-transform mt-8 font-serif-hist text-3xl font-black uppercase tracking-[0.2em] text-vn-gold md:text-5xl">
-            {m.keyText}
-          </p>
-          <p className="m-cap will-transform mx-auto mt-8 max-w-xl font-serif-hist text-base italic leading-relaxed text-vn-ivory/75 md:text-lg">
-            {m.caption}
-          </p>
+          {/* framed archival photo — right on desktop, on top on mobile. The whole
+              image is always shown (object-contain), so faces are never cut or
+              covered by text. Falls back to the symbol if the file is missing. */}
+          <div className="m-frame will-transform relative order-1 w-full max-w-sm md:order-2 md:w-[42%] md:max-w-md">
+            <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-[3px] border border-vn-gold-antique/25 bg-vn-black/70 shadow-[0_30px_80px_rgba(0,0,0,0.65)]">
+              {/* fallback symbol, behind the photo */}
+              <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                <Symbol kind={m.symbol} />
+              </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={m.image}
+                alt={m.heading}
+                className="m-bgphoto will-transform relative h-full w-full object-contain"
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).style.display = 'none';
+                }}
+              />
+            </div>
+            <p className="mt-3 text-center font-body text-[10px] uppercase tracking-[0.22em] text-vn-ivory/35">
+              Tư liệu · {m.year}
+            </p>
+          </div>
         </div>
       </div>
     </section>
