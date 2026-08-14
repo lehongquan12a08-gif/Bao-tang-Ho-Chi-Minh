@@ -21,10 +21,10 @@ export const NARRATION_FILES: Record<1 | 2, string> = {
 export const NARRATION: NarrationCue[] = [
   // ── Part 1 (mở đầu → 1920) ──────────────────────────────
   { id: 'hero', part: 1, start: 0, end: 15 },
-  { id: 'chapter-1890', part: 1, start: 15, end: 33 },
-  { id: 'chapter-1911', part: 1, start: 33, end: 52 },
-  { id: 'chapter-1919', part: 1, start: 52, end: 68 },
-  { id: 'chapter-1920', part: 1, start: 68, end: 86 },
+  { id: 'chapter-1890', part: 1, start: 15, end: 31 },
+  { id: 'chapter-1911', part: 1, start: 31, end: 49 },
+  { id: 'chapter-1919', part: 1, start: 49, end: 64 },
+  { id: 'chapter-1920', part: 1, start: 64, end: 86 },
   // ── Part 2 (30 năm → kết) ───────────────────────────────
   { id: 'chapter-nguyen-ai-quoc', part: 2, start: 0, end: 24 },
   { id: 'chapter-1930', part: 2, start: 24, end: 39 },
