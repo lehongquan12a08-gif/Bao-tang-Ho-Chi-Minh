@@ -52,10 +52,12 @@ export default function Footer() {
         dẫn cùng dữ kiện lịch sử với nguồn chính thống trước khi sử dụng chính thức.
       </Reveal>
 
-      {/* Author credit — small & quiet */}
-      <p className="mt-16 font-body text-[11px] tracking-[0.14em] text-vn-ivory/35">
-        Thực hiện · <span className="text-vn-ivory/55">Lê Hồng Quân</span>
-      </p>
+      {/* Credits — small & quiet */}
+      <div className="mt-16 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 font-body text-[11px] tracking-[0.14em] text-vn-ivory/35">
+        <span>Thực hiện · <span className="text-vn-ivory/55">Lê Hồng Quân</span></span>
+        <span className="text-vn-ivory/20">·</span>
+        <span>Lồng tiếng · <span className="text-vn-ivory/55">Tạ Minh Trang</span></span>
+      </div>
     </footer>
   );
 }
