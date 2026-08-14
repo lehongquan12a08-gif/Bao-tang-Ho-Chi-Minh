@@ -71,7 +71,11 @@ export default function AutoScrollButton() {
         if (el) {
           const vh = window.innerHeight;
           const startY = el.offsetTop - vh / 2; // where this section takes centre
-          const target = Math.min(max, Math.max(0, startY + el.offsetHeight * narrationState.progress));
+          // map the voice's progress across only its assigned fraction band
+          const s0 = narrationState.scroll0;
+          const s1 = narrationState.scroll1;
+          const band = s0 + (s1 - s0) * narrationState.progress;
+          const target = Math.min(max, Math.max(0, startY + el.offsetHeight * band));
           const nextY = target > cur ? target : cur; // never snap backwards
           scrollToY(nextY);
           if (nextY >= max - 2) {

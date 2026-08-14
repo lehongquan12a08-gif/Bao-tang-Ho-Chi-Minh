@@ -12,6 +12,10 @@ const VOICE_MAKEUP = 1.5;
 // the Tuyên ngôn recording is also a voice — lift it close to the narration
 const DECL_SRC = '/audio/sfx/declaration-1945.mp3';
 const DECL_BOOST = 2.5;
+// the section fraction band the Tuyên ngôn recording scrubs — the Ba Đình photo
+// act, held on screen while Bác reads. It only fires AFTER the 1945 narration
+// has finished (its scroll band ends at 0.46), so the two voices never overlap.
+const DECL_SCROLL: [number, number] = [0.54, 0.67];
 // how much the supporting sounds (music + waves/wind/crowd) drop while a voice
 // (narration or the Tuyên ngôn recording) is speaking
 const AMBIENT_DUCK = 0.18;
@@ -34,8 +38,9 @@ const SFX: Sfx[] = [
   { id: 'chapter-1911', src: `/audio/sfx/ship-1911.wav?${V}`, vol: 0.16 },
   { id: 'chapter-1941', src: `/audio/sfx/mountain-1941.wav?${V}`, vol: 0.14 },
   { id: 'chapter-1945', src: `/audio/sfx/crowd-1945.wav?${V}`, vol: 0.09 },
-  // Bác đọc Tuyên ngôn — a voice clip, plays once on the Ba Đình scene.
-  { id: 'chapter-1945', src: DECL_SRC, vol: 1.0, loop: false, voice: true, range: [0.44, 0.74] },
+  // Bác đọc Tuyên ngôn — a voice clip, fires on the Ba Đình scene AFTER the
+  // 1945 narration has finished (narration band ends at 0.46).
+  { id: 'chapter-1945', src: DECL_SRC, vol: 1.0, loop: false, voice: true, range: [0.5, 0.74] },
 ];
 
 const LS_KEY = 'httcb-audio';
@@ -234,6 +239,8 @@ export default function AudioController() {
           narrationState.activeId = narrCue.id;
           narrationState.progress = 0;
           narrationState.playing = true;
+          narrationState.scroll0 = narrCue.scroll ? narrCue.scroll[0] : 0;
+          narrationState.scroll1 = narrCue.scroll ? narrCue.scroll[1] : 1;
           stopNarrWatch();
           narrWatchRef.current = requestAnimationFrame(narrWatch);
         }
@@ -280,7 +287,19 @@ export default function AudioController() {
     const narrPlaying = narrElRef.current ? !narrElRef.current.paused : false;
     const voice = declActive || narrPlaying;
     narrationState.speaking = voice; // any audible voice
-    narrationState.playing = narrPlaying; // only the narration drives the scrub
+    if (declActive) {
+      // the Tuyên ngôn recording takes over as the scrubbing voice: hold on the
+      // Ba Đình photo (DECL_SCROLL) and glide across it as Bác reads
+      const de = sfxRef.current.get(DECL_SRC);
+      const d = de && isFinite(de.duration) ? de.duration : 0;
+      narrationState.activeId = 'chapter-1945';
+      narrationState.scroll0 = DECL_SCROLL[0];
+      narrationState.scroll1 = DECL_SCROLL[1];
+      narrationState.progress = de && d > 0 ? clamp(de.currentTime / d) : 0;
+      narrationState.playing = !!(de && !de.paused && !de.ended);
+    } else {
+      narrationState.playing = narrPlaying; // only the narration drives the scrub
+    }
 
     // 3) set SFX volumes — supporting ambience ducks under a voice ---------
     for (const s of SFX) {

@@ -11,6 +11,10 @@ export interface NarrationCue {
   part: 1 | 2;
   start: number; // giây
   end: number; // giây
+  // dải cuộn con (0..1) của section mà đoạn này quét qua. Mặc định cả section
+  // [0,1]. Với 1945: thuyết minh chỉ quét băng đầu để đọc XONG rồi mới tới bản
+  // ghi Tuyên ngôn (xem DECL_SCROLL trong AudioController).
+  scroll?: [number, number];
 }
 
 export const NARRATION_FILES: Record<1 | 2, string> = {
@@ -29,7 +33,9 @@ export const NARRATION: NarrationCue[] = [
   { id: 'chapter-nguyen-ai-quoc', part: 2, start: 0, end: 24 },
   { id: 'chapter-1930', part: 2, start: 24, end: 39 },
   { id: 'chapter-1941', part: 2, start: 39, end: 60 },
-  { id: 'chapter-1945', part: 2, start: 60, end: 83 },
+  // thuyết minh 1945 chỉ quét băng đầu (chữ ngày tháng); đọc xong mới tới bản
+  // ghi Tuyên ngôn ở băng giữa (DECL_SCROLL), rồi ĐỘC LẬP / TỰ DO
+  { id: 'chapter-1945', part: 2, start: 60, end: 83, scroll: [0, 0.46] },
   { id: 'chapter-1954', part: 2, start: 83, end: 98 },
   { id: 'map', part: 2, start: 98, end: 116 },
   { id: 'gallery', part: 2, start: 116, end: 135 },
