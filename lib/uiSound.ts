@@ -1,33 +1,60 @@
-// A tiny "chime" cue played when isolated words appear (WordCascade, the 1945
-// date). Gated on the sound being enabled, ducked under a voice, and scaled by
-// the master volume. Uses a small pool of Audio elements so quick successions
-// can overlap. Pitch is nudged per word for a gentle melodic feel.
+// A "chime" cue played when isolated words appear (WordCascade, the 1945 date).
+// Gated on the sound being enabled, ducked under a voice, scaled by the master
+// volume. Routed through a Web Audio gain so it can be lifted well above the
+// element-volume ceiling (the tone is low/warm, which reads quiet otherwise).
+// A small pool of sources lets quick successions overlap; pitch is nudged per
+// word for a gentle melodic feel.
 import { narrationState } from './narrationState';
 
-const SRC = '/audio/sfx/chime.wav?v=2';
+const SRC = '/audio/sfx/chime.wav?v=3';
 const RATES = [1, 1.12, 0.94, 1.06, 0.88, 1.18];
+const BOOST = 3.2; // Web Audio gain — lifts the warm tone so it clearly carries
 
 let pool: HTMLAudioElement[] = [];
 let idx = 0;
 let last = 0;
+let ctx: AudioContext | null = null;
+let gain: GainNode | null = null;
 
 export function initUiSound() {
   if (typeof Audio === 'undefined' || pool.length) return;
+  // shared gain node → destination, so every chime can exceed element volume
+  try {
+    const AC =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (AC) {
+      ctx = new AC();
+      gain = ctx.createGain();
+      gain.gain.value = BOOST;
+      gain.connect(ctx.destination);
+    }
+  } catch {
+    /* Web Audio unavailable → chime plays at element volume */
+  }
   for (let i = 0; i < 4; i++) {
     const a = new Audio(SRC);
     a.preload = 'auto';
     a.volume = 0;
+    if (ctx && gain) {
+      try {
+        ctx.createMediaElementSource(a).connect(gain);
+      } catch {
+        /* ignore — falls back to element output */
+      }
+    }
     pool.push(a);
   }
 }
 
 // `seq` varies the pitch (word index); `base` is the peak volume before scaling.
-export function playChime(seq = 0, base = 0.4) {
+export function playChime(seq = 0, base = 0.7) {
   if (!narrationState.enabled) return;
   const now = Date.now();
   if (now - last < 90) return; // throttle scrub jitter / rapid re-fires
   last = now;
   if (!pool.length) initUiSound();
+  ctx?.resume().catch(() => {});
   const a = pool[idx];
   idx = (idx + 1) % pool.length;
   if (!a) return;
