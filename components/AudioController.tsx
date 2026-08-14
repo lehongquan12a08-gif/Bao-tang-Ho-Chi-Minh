@@ -88,6 +88,7 @@ export default function AudioController() {
   const narrCtxRef = useRef<AudioContext | null>(null);
   const narrWatchRef = useRef<number | null>(null);
   const declFiredRef = useRef(false); // Tuyên ngôn one-shot: fire once per visit
+  const narrFadingRef = useRef(false); // narration is fading out its tail
 
   // create audio elements once
   useEffect(() => {
@@ -185,13 +186,11 @@ export default function AudioController() {
       return;
     }
     if (a.currentTime >= narrEndRef.current) {
-      a.pause();
       stopNarrWatch();
-      // segment finished — publish the final state so the auto-scroll moves on
-      // (apply() is scroll-driven and won't run while the page barely moves)
       narrationState.progress = 1;
-      narrationState.playing = false;
-      narrationState.speaking = false;
+      narrationState.playing = false; // scroll moves on; the tail fades out
+      narrFadingRef.current = true;
+      fadeTo(a, 0, 380); // soft tail instead of a hard cut
       return;
     }
     // publish the audio clock so the auto-scroll can lock the scroll to the voice
@@ -233,6 +232,13 @@ export default function AudioController() {
             a.currentTime = narrCue.start;
           } catch {
             /* ignore */
+          }
+          // cancel any in-flight fade-out and restore full level for the new cue
+          narrFadingRef.current = false;
+          const pf = fades.get(a);
+          if (pf) {
+            cancelAnimationFrame(pf);
+            fades.delete(a);
           }
           a.volume = clamp(master); // Web Audio gain adds the boost on top
           narrCtxRef.current?.resume().catch(() => {});
@@ -286,8 +292,12 @@ export default function AudioController() {
       narrElRef.current.pause();
       stopNarrWatch();
     }
-    const narrPlaying = narrElRef.current ? !narrElRef.current.paused : false;
-    const voice = declActive || narrPlaying;
+    const narrAudible = narrElRef.current ? !narrElRef.current.paused : false;
+    if (narrFadingRef.current && !narrAudible) narrFadingRef.current = false;
+    // a fading tail is still audible (ducks other sounds) but no longer drives
+    // the scroll — the auto-scroll glides on while the last word trails off
+    const narrDriving = narrAudible && !narrFadingRef.current;
+    const voice = declActive || narrAudible;
     narrationState.speaking = voice; // any audible voice
     if (declActive) {
       // the Tuyên ngôn recording takes over as the scrubbing voice: hold on the
@@ -300,7 +310,7 @@ export default function AudioController() {
       narrationState.progress = de && d > 0 ? clamp(de.currentTime / d) : 0;
       narrationState.playing = !!(de && !de.paused && !de.ended);
     } else {
-      narrationState.playing = narrPlaying; // only the narration drives the scrub
+      narrationState.playing = narrDriving; // only a live (non-fading) narration
     }
 
     // 3) set SFX volumes — supporting ambience ducks under a voice ---------

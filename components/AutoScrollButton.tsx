@@ -23,6 +23,19 @@ export default function AutoScrollButton() {
   const maxScroll = () =>
     document.documentElement.scrollHeight - window.innerHeight;
 
+  // the auto-scroll's terminal stop: frame the footer nicely (centred) rather
+  // than bottoming out, which would leave the footer's bottom padding as an
+  // empty gap below the content.
+  const endY = () => {
+    const max = maxScroll();
+    const footer = document.getElementById('footer');
+    if (footer) {
+      const c = footer.offsetTop + footer.offsetHeight / 2 - window.innerHeight / 2;
+      if (c > 0 && c < max) return c;
+    }
+    return max;
+  };
+
   const curScroll = () => {
     const lenis = getLenis();
     return lenis
@@ -57,7 +70,7 @@ export default function AutoScrollButton() {
       const dt = lastTs.current ? Math.min(0.05, (ts - lastTs.current) / 1000) : 0;
       lastTs.current = ts;
 
-      const max = maxScroll();
+      const max = endY();
       const cur = curScroll();
 
       // 1) VOICE-LOCKED SCRUB — while a chapter's narration plays, tie the scroll
@@ -104,9 +117,9 @@ export default function AutoScrollButton() {
 
   // --- play -------------------------------------------------------------
   const play = useCallback(() => {
-    const max = maxScroll();
+    const max = endY();
     const lenis = getLenis();
-    // If we're already at the very bottom, restart from the top.
+    // If we're already at the terminal stop, restart from the top.
     if (curScroll() >= max - 4) {
       if (lenis) lenis.scrollTo(0, { immediate: true });
       else window.scrollTo(0, 0);
