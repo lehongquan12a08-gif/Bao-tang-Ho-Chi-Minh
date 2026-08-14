@@ -6,9 +6,9 @@
 // word for a gentle melodic feel.
 import { narrationState } from './narrationState';
 
-const SRC = '/audio/sfx/chime.wav?v=4';
+const SRC = '/audio/sfx/chime.wav?v=5';
 const RATES = [1, 1.12, 0.94, 1.06, 0.88, 1.18];
-const BOOST = 3.2; // Web Audio gain — lifts the warm tone so it clearly carries
+const BOOST = 2.3; // Web Audio gain — lifts the warm tone so it clearly carries
 
 let pool: HTMLAudioElement[] = [];
 let idx = 0;
@@ -18,7 +18,8 @@ let gain: GainNode | null = null;
 
 export function initUiSound() {
   if (typeof Audio === 'undefined' || pool.length) return;
-  // shared gain node → destination, so every chime can exceed element volume
+  // shared gain → limiter → destination: the gain lets the warm tone exceed the
+  // element-volume ceiling; the limiter catches peaks so it never clips (no buzz)
   try {
     const AC =
       window.AudioContext ||
@@ -27,7 +28,14 @@ export function initUiSound() {
       ctx = new AC();
       gain = ctx.createGain();
       gain.gain.value = BOOST;
-      gain.connect(ctx.destination);
+      const limiter = ctx.createDynamicsCompressor();
+      limiter.threshold.value = -6;
+      limiter.knee.value = 6;
+      limiter.ratio.value = 20;
+      limiter.attack.value = 0.002;
+      limiter.release.value = 0.15;
+      gain.connect(limiter);
+      limiter.connect(ctx.destination);
     }
   } catch {
     /* Web Audio unavailable → chime plays at element volume */
