@@ -4,7 +4,7 @@
 // can overlap. Pitch is nudged per word for a gentle melodic feel.
 import { narrationState } from './narrationState';
 
-const SRC = '/audio/sfx/chime.wav';
+const SRC = '/audio/sfx/chime.wav?v=2';
 const RATES = [1, 1.12, 0.94, 1.06, 0.88, 1.18];
 
 let pool: HTMLAudioElement[] = [];
@@ -22,7 +22,7 @@ export function initUiSound() {
 }
 
 // `seq` varies the pitch (word index); `base` is the peak volume before scaling.
-export function playChime(seq = 0, base = 0.16) {
+export function playChime(seq = 0, base = 0.2) {
   if (!narrationState.enabled) return;
   const now = Date.now();
   if (now - last < 90) return; // throttle scrub jitter / rapid re-fires

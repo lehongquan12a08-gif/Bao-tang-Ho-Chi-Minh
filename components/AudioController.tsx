@@ -71,6 +71,7 @@ export default function AudioController() {
   const [enabled, setEnabled] = useState(false);
   const [showPrompt, setShowPrompt] = useState(false);
   const [vol, setVol] = useState(0.8);
+  const [tune, setTune] = useState<string | null>(null); // #tune debug readout
 
   const ambientRef = useRef<HTMLAudioElement | null>(null);
   const sfxRef = useRef<Map<string, HTMLAudioElement>>(new Map());
@@ -470,6 +471,22 @@ export default function AudioController() {
     return () => window.clearInterval(id);
   }, [apply]);
 
+  // #tune — a small readout of the active chapter + narration second, so cue
+  // timings can be read off precisely. Only shows when the URL hash has 'tune'.
+  useEffect(() => {
+    if (typeof window === 'undefined' || !/tune/.test(window.location.hash)) return;
+    const id = window.setInterval(() => {
+      const el = narrElRef.current;
+      const t = el ? el.currentTime : 0;
+      const decl = sfxRef.current.get(DECL_SRC);
+      const dline = decl && !decl.paused ? ` · Bác đọc ${decl.currentTime.toFixed(1)}s` : '';
+      setTune(
+        `${narrActiveRef.current ?? '—'} · ${t.toFixed(1)}s · p${narrationState.progress.toFixed(2)}${dline}`
+      );
+    }, 100);
+    return () => window.clearInterval(id);
+  }, []);
+
   // pause when the tab is hidden
   useEffect(() => {
     const onVis = () => {
@@ -496,6 +513,12 @@ export default function AudioController() {
 
   return (
     <>
+      {tune && (
+        <div className="pointer-events-none fixed bottom-2 left-1/2 z-[120] -translate-x-1/2 rounded bg-black/85 px-3 py-1 font-mono text-[11px] tracking-wide text-vn-gold">
+          {tune}
+        </div>
+      )}
+
       <div className="fixed bottom-7 right-6 z-[95] flex items-center gap-3 md:bottom-9 md:right-9">
         {/* volume slider (shows when sound is on) */}
         {enabled && (
