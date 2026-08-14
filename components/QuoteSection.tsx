@@ -47,9 +47,12 @@ export default function QuoteSection() {
   return (
     <section
       ref={root}
-      className="relative flex min-h-screen items-center justify-center px-6 py-[18vh]"
+      id="quote"
+      className="relative h-[220vh]"
       style={{ backgroundColor: '#F4EBD8' }}
     >
+      {/* pinned so the quote is held on screen while the auto-scroll lingers */}
+      <div className="sticky top-0 flex h-screen items-center justify-center px-6 py-[10vh]">
       <div className="mx-auto max-w-5xl text-center">
         <blockquote className="font-serif-hist font-black leading-[1.05] text-vn-charcoal">
           <span className="mb-6 block text-3xl text-vn-red/60">“</span>
@@ -73,6 +76,7 @@ export default function QuoteSection() {
         <p className="qattr mt-2 font-body text-[11px] uppercase tracking-[0.2em] text-vn-brown/60">
           {verifiedQuote.context}
         </p>
+      </div>
       </div>
     </section>
   );

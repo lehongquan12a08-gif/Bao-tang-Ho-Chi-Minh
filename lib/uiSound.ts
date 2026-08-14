@@ -6,7 +6,7 @@
 // word for a gentle melodic feel.
 import { narrationState } from './narrationState';
 
-const SRC = '/audio/sfx/chime.wav?v=3';
+const SRC = '/audio/sfx/chime.wav?v=4';
 const RATES = [1, 1.12, 0.94, 1.06, 0.88, 1.18];
 const BOOST = 3.2; // Web Audio gain — lifts the warm tone so it clearly carries
 
