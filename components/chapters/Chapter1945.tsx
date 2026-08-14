@@ -28,12 +28,14 @@ export default function Chapter1945() {
       });
 
       // ---- Act A : the date builds and holds (no flashing/black) ---------
-      tl.call(playChime, [0], 0.03)
-        .fromTo(q('.g-02'), { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.03 }, 0.03)
-        .call(playChime, [1], 0.07)
-        .fromTo(q('.g-09'), { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.03 }, 0.07)
-        .call(playChime, [2], 0.11)
-        .fromTo(q('.g-1945'), { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.03 }, 0.11)
+      // numbers snap in quickly at the start, then the whole date holds (the
+      // section's overall read/scroll time is unchanged — only the reveal is faster)
+      tl.call(playChime, [0], 0.02)
+        .fromTo(q('.g-02'), { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.02 }, 0.02)
+        .call(playChime, [1], 0.045)
+        .fromTo(q('.g-09'), { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.02 }, 0.045)
+        .call(playChime, [2], 0.07)
+        .fromTo(q('.g-1945'), { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.02 }, 0.07)
         // whole date holds, then lifts away before the photograph
         .to(q('.date-line'), { opacity: 0, y: -30, duration: 0.05 }, 0.33);
 

@@ -22,7 +22,7 @@ export function initUiSound() {
 }
 
 // `seq` varies the pitch (word index); `base` is the peak volume before scaling.
-export function playChime(seq = 0, base = 0.2) {
+export function playChime(seq = 0, base = 0.4) {
   if (!narrationState.enabled) return;
   const now = Date.now();
   if (now - last < 90) return; // throttle scrub jitter / rapid re-fires
