@@ -21,6 +21,9 @@ const DECL_SCROLL: [number, number] = [0.44, 0.63];
 // (narration or the Tuyên ngôn recording) is speaking
 const AMBIENT_DUCK = 0.18;
 const SFX_DUCK = 0.22;
+// how long a narration segment takes to fade out at its end (soft tail instead
+// of a hard cut) — long enough to feel gentle, not clipped
+const NARR_FADE_MS = 850;
 
 // Background music (loops) + per-chapter ambience. Some clips are `loop:false`
 // one-shots (e.g. the real Tuyên ngôn recording) that fire inside a scroll
@@ -191,7 +194,7 @@ export default function AudioController() {
       narrationState.progress = 1;
       narrationState.playing = false; // scroll moves on; the tail fades out
       narrFadingRef.current = true;
-      fadeTo(a, 0, 380); // soft tail instead of a hard cut
+      fadeTo(a, 0, NARR_FADE_MS); // soft tail instead of a hard cut
       return;
     }
     // publish the audio clock so the auto-scroll can lock the scroll to the voice
