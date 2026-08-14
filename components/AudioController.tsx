@@ -80,6 +80,7 @@ export default function AudioController() {
   const narrElRef = useRef<HTMLAudioElement | null>(null);
   const narrCtxRef = useRef<AudioContext | null>(null);
   const narrWatchRef = useRef<number | null>(null);
+  const declFiredRef = useRef(false); // Tuyên ngôn one-shot: fire once per visit
 
   // create audio elements once
   useEffect(() => {
@@ -178,8 +179,12 @@ export default function AudioController() {
     if (a.currentTime >= narrEndRef.current) {
       a.pause();
       stopNarrWatch();
+      // segment finished — release the voice flag right away so the auto-scroll
+      // resumes (apply() is scroll-driven and won't run while the page is held)
+      narrationState.speaking = false;
       return;
     }
+    narrationState.speaking = true;
     narrWatchRef.current = requestAnimationFrame(narrWatch);
   }, [stopNarrWatch]);
 
@@ -247,7 +252,12 @@ export default function AudioController() {
         }
       }
       activeMap.set(s.src, active);
-      if (active && s.voice) declActive = true;
+      // a voice clip only keeps the "voice" flag until it has finished playing —
+      // otherwise it would hold the auto-scroll forever after the clip ends
+      if (active && s.voice) {
+        const de = sfxRef.current.get(s.src);
+        if (!de || !de.ended) declActive = true;
+      }
     }
     // don't stack two voices: the Tuyên ngôn recording takes over from narration
     if (declActive && narrElRef.current && !narrElRef.current.paused) {
@@ -263,12 +273,22 @@ export default function AudioController() {
       if (!a) continue;
       if (activeMap.get(s.src)) {
         if (s.voice) {
-          if (a.paused) a.currentTime = 0;
-          fadeTo(a, s.vol * master, 300);
+          // fire once on entering range; don't restart while still in range
+          // (even after it ends) — that would trap the auto-scroll on a loop
+          if (!declFiredRef.current) {
+            declFiredRef.current = true;
+            try {
+              a.currentTime = 0;
+            } catch {
+              /* ignore */
+            }
+            fadeTo(a, s.vol * master, 300);
+          }
         } else {
           fadeTo(a, s.vol * master * (voice ? SFX_DUCK : 1), 700);
         }
       } else {
+        if (s.voice) declFiredRef.current = false; // re-arm for next visit
         fadeTo(a, 0, 900);
       }
     }
@@ -310,6 +330,7 @@ export default function AudioController() {
     narrRef.current.forEach((a) => a.pause());
     narrActiveRef.current = null;
     narrElRef.current = null;
+    declFiredRef.current = false;
     stopNarrWatch();
     narrationState.speaking = false;
     narrationState.enabled = false;
@@ -387,6 +408,16 @@ export default function AudioController() {
     return () => window.removeEventListener('scroll', onScroll);
   }, [apply]);
 
+  // also re-evaluate on a low-frequency tick: while the auto-scroll HOLDS for a
+  // voice (no scrolling), scroll events stop firing — this keeps the audio state
+  // (e.g. detecting when a voice clip has finished) fresh so it never deadlocks.
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      if (enabledRef.current) apply();
+    }, 200);
+    return () => window.clearInterval(id);
+  }, [apply]);
+
   // pause when the tab is hidden
   useEffect(() => {
     const onVis = () => {
@@ -397,6 +428,8 @@ export default function AudioController() {
         narrRef.current.forEach((a) => a.pause());
         narrActiveRef.current = null; // replay current chapter's line on return
         narrElRef.current = null;
+        declFiredRef.current = false;
+        narrationState.speaking = false;
         stopNarrWatch();
       } else {
         ambientRef.current?.play().catch(() => {});
