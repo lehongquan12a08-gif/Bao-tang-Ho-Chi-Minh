@@ -14,9 +14,12 @@ export interface TimelineEntry {
 export const timelineMarkers: TimelineEntry[] = [
   { id: 'hero', year: '1890', short: 'Sinh ra' },
   { id: 'chapter-1911', year: '1911', short: 'Ra đi tìm đường' },
-  { id: 'chapter-nguyen-ai-quoc', year: '1920s', short: 'Nguyễn Ái Quốc' },
+  { id: 'chapter-1919', year: '1919', short: 'Bản yêu cầu An Nam' },
+  { id: 'chapter-1920', year: '1920', short: 'Đại hội Tours' },
+  { id: 'chapter-1930', year: '1930', short: 'Thành lập Đảng' },
   { id: 'chapter-1941', year: '1941', short: 'Trở về Tổ quốc' },
   { id: 'chapter-1945', year: '1945', short: 'Tuyên ngôn Độc lập' },
+  { id: 'chapter-1954', year: '1954', short: 'Điện Biên Phủ' },
   { id: 'final', year: '1969', short: 'Trọn một cuộc đời' },
 ];
 

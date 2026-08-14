@@ -6,6 +6,8 @@ import Hero from '@/components/Hero';
 import Chapter1890 from '@/components/chapters/Chapter1890';
 import WordCascade from '@/components/WordCascade';
 import Chapter1911 from '@/components/chapters/Chapter1911';
+import MilestoneChapter from '@/components/MilestoneChapter';
+import { MILESTONES } from '@/data/milestones';
 import NguyenAiQuoc from '@/components/chapters/NguyenAiQuoc';
 import Chapter1941 from '@/components/chapters/Chapter1941';
 import Chapter1945 from '@/components/chapters/Chapter1945';
@@ -40,6 +42,12 @@ export default function Home() {
         {/* 03 · 1911 — Ra đi tìm đường cứu nước */}
         <Chapter1911 />
 
+        {/* 1919 · Bản yêu cầu của nhân dân An Nam */}
+        <MilestoneChapter milestone={MILESTONES.y1919} />
+
+        {/* 1920 · Bước ngoặt tại Đại hội Tours */}
+        <MilestoneChapter milestone={MILESTONES.y1920} />
+
         {/* 04 · 30 NĂM — the great search */}
         <WordCascade
           id="chapter-30-nam"
@@ -51,6 +59,9 @@ export default function Home() {
         {/* 05 · Nguyễn Ái Quốc — the archive */}
         <NguyenAiQuoc />
 
+        {/* 1930 · Thành lập Đảng Cộng sản Việt Nam */}
+        <MilestoneChapter milestone={MILESTONES.y1930} />
+
         {/* 06 · 1941 — Trở về Tổ quốc */}
         <Chapter1941 />
 
@@ -59,6 +70,9 @@ export default function Home() {
 
         {/* 08 · Verified quote */}
         <QuoteSection />
+
+        {/* 1954 · Chiến thắng Điện Biên Phủ */}
+        <MilestoneChapter milestone={MILESTONES.y1954} />
 
         {/* 09 · Việt Nam */}
         <VietnamMapSection />
