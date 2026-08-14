@@ -6,11 +6,10 @@ import GoldStar from '@/components/objects/GoldStar';
 import TextureBg from '@/components/TextureBg';
 
 /**
- * 1945 — three cleanly separated acts (no overlapping text):
- *   A. the date assembles (02 → 09 → 1945 → 02.09.1945)
- *   B. the Ba Đình / Tuyên ngôn Độc lập photograph, held on screen
+ * 1945 — three cleanly separated acts (no black gaps, nothing overlaps):
+ *   A. the date builds up and HOLDS  (02 · 09 · 1945, staying on screen)
+ *   B. the Ba Đình / Tuyên ngôn Độc lập photograph, held while Bác reads
  *   C. deep red → ĐỘC LẬP → TỰ DO, under the upright gold star
- * Each element is only ever visible during its own act.
  */
 export default function Chapter1945() {
   const root = useRef<HTMLDivElement>(null);
@@ -27,36 +26,33 @@ export default function Chapter1945() {
         },
       });
 
-      // ---- Act A : the date assembles -----------------------------------
-      const frag = (sel: Element[], at: number) =>
-        tl.fromTo(sel, { opacity: 0, scale: 1.5 }, { opacity: 1, scale: 1, duration: 0.05 }, at)
-          .to(sel, { opacity: 0, scale: 0.75, duration: 0.04 }, at + 0.07);
-      frag(q('.d-02'), 0.02);
-      frag(q('.d-09'), 0.14);
-      frag(q('.d-1945'), 0.26);
-      tl.fromTo(q('.d-full'), { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.05 }, 0.38)
-        .to(q('.d-full'), { opacity: 0, y: -24, duration: 0.05 }, 0.46);
+      // ---- Act A : the date builds and holds (no flashing/black) ---------
+      tl.fromTo(q('.g-02'), { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.04 }, 0.04)
+        .fromTo(q('.g-09'), { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.04 }, 0.1)
+        .fromTo(q('.g-1945'), { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.04 }, 0.16)
+        // whole date holds on screen 0.20 → 0.32, then lifts away
+        .to(q('.date-line'), { opacity: 0, y: -30, duration: 0.05 }, 0.33);
 
-      // ---- Act B : the photograph (held) --------------------------------
-      tl.fromTo(q('.scene'), { opacity: 0 }, { opacity: 1, duration: 0.05 }, 0.52)
-        .fromTo(q('.s-decl'), { opacity: 0, y: 30, scale: 0.96 }, { opacity: 1, y: 0, scale: 1, duration: 0.06 }, 0.53)
-        .fromTo(q('.badinh-label'), { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.04 }, 0.55)
-        // HOLD 0.59 → 0.68
+      // ---- Act B : the photograph (held while the recording plays) -------
+      tl.fromTo(q('.scene'), { opacity: 0 }, { opacity: 1, duration: 0.05 }, 0.36)
+        .fromTo(q('.s-decl'), { opacity: 0, y: 24, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: 0.05 }, 0.37)
+        .fromTo(q('.badinh-label'), { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.04 }, 0.39)
+        // HOLD 0.43 → 0.66
         .to(q('.scene'), { opacity: 0, duration: 0.05 }, 0.68);
 
       // ---- Act C : red → ĐỘC LẬP → TỰ DO --------------------------------
       tl.to(q('.bg-1945'), { backgroundColor: '#8F1713', duration: 0.06, ease: 'none' }, 0.66)
         .to(q('.silk-45'), { opacity: 0.7, duration: 0.06, ease: 'none' }, 0.66)
         .fromTo(q('.star-45'), { opacity: 0, scale: 0.7 }, { opacity: 0.5, scale: 1, duration: 0.06 }, 0.7)
-        .fromTo(q('.w-doclap'), { opacity: 0, scale: 1.35 }, { opacity: 1, scale: 1, duration: 0.05 }, 0.74)
+        .fromTo(q('.w-doclap'), { opacity: 0, scale: 1.3 }, { opacity: 1, scale: 1, duration: 0.05 }, 0.74)
         .to(q('.w-doclap'), { opacity: 0, y: -50, duration: 0.05 }, 0.85)
-        .fromTo(q('.w-tudo'), { opacity: 0, scale: 1.35 }, { opacity: 1, scale: 1, duration: 0.05 }, 0.89);
+        .fromTo(q('.w-tudo'), { opacity: 0, scale: 1.3 }, { opacity: 1, scale: 1, duration: 0.05 }, 0.89);
     },
     { scope: root }
   );
 
   return (
-    <section id="chapter-1945" ref={root} className="relative h-[620vh]">
+    <section id="chapter-1945" ref={root} className="relative h-[480vh]">
       <div className="bg-1945 sticky top-0 flex h-screen items-center justify-center overflow-hidden bg-vn-black">
         {/* red-silk atmosphere for the finale */}
         <TextureBg src="/images/silk.webp" className="silk-45 z-0 opacity-0" />
@@ -66,13 +62,14 @@ export default function Chapter1945() {
           <GoldStar className="h-[64vh] w-[64vh]" />
         </div>
 
-        {/* Act A — date fragments */}
-        <span className="d-02 will-transform absolute z-[5] headline-year text-vn-ivory opacity-0">02</span>
-        <span className="d-09 will-transform absolute z-[5] headline-year text-vn-ivory opacity-0">09</span>
-        <span className="d-1945 will-transform absolute z-[5] headline-year text-vn-ivory opacity-0">1945</span>
-        <span className="d-full will-transform absolute z-[5] headline-mega text-vn-gold text-glow-gold opacity-0">
-          02.09.1945
-        </span>
+        {/* Act A — the date, built up and held (no black gaps) */}
+        <div className="date-line will-transform absolute z-[5] flex items-baseline gap-4 md:gap-8">
+          <span className="g-02 will-transform headline-mega text-vn-ivory opacity-0">02</span>
+          <span className="headline-mega text-vn-gold/70">·</span>
+          <span className="g-09 will-transform headline-mega text-vn-ivory opacity-0">09</span>
+          <span className="headline-mega text-vn-gold/70">·</span>
+          <span className="g-1945 will-transform headline-mega text-vn-gold text-glow-gold opacity-0">1945</span>
+        </div>
 
         {/* Act B — the photograph */}
         <div className="scene pointer-events-none absolute inset-0 z-[3] opacity-0">

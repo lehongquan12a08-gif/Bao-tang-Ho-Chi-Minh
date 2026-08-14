@@ -15,7 +15,7 @@ const DECL_BOOST = 2.5;
 // the section fraction band the Tuyên ngôn recording scrubs — the Ba Đình photo
 // act, held on screen while Bác reads. It only fires AFTER the 1945 narration
 // has finished (its scroll band ends at 0.46), so the two voices never overlap.
-const DECL_SCROLL: [number, number] = [0.54, 0.67];
+const DECL_SCROLL: [number, number] = [0.44, 0.63];
 // how much the supporting sounds (music + waves/wind/crowd) drop while a voice
 // (narration or the Tuyên ngôn recording) is speaking
 const AMBIENT_DUCK = 0.18;
@@ -40,7 +40,7 @@ const SFX: Sfx[] = [
   { id: 'chapter-1945', src: `/audio/sfx/crowd-1945.wav?${V}`, vol: 0.09 },
   // Bác đọc Tuyên ngôn — a voice clip, fires on the Ba Đình scene AFTER the
   // 1945 narration has finished (narration band ends at 0.46).
-  { id: 'chapter-1945', src: DECL_SRC, vol: 1.0, loop: false, voice: true, range: [0.5, 0.74] },
+  { id: 'chapter-1945', src: DECL_SRC, vol: 1.0, loop: false, voice: true, range: [0.4, 0.72] },
 ];
 
 const LS_KEY = 'httcb-audio';

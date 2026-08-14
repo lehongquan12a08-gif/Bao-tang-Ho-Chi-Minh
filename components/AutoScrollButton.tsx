@@ -8,8 +8,8 @@ import { narrationState } from '@/lib/narrationState';
 // clock (see step) so every chapter glides through in exactly its voiceover and
 // hands off seamlessly; SPEED_GAP only carries the silent interludes between
 // narrated chapters. With sound OFF, a steady cinematic pace throughout.
-const SPEED = 240; // px/s — sound off
-const SPEED_GAP = 300; // px/s — silent interludes while sound is on
+const SPEED = 270; // px/s — sound off
+const SPEED_GAP = 400; // px/s — silent interludes / text reveals while sound is on
 const RING = 2 * Math.PI * 15; // circumference for r=15 progress ring
 
 export default function AutoScrollButton() {

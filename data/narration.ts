@@ -35,7 +35,7 @@ export const NARRATION: NarrationCue[] = [
   { id: 'chapter-1941', part: 2, start: 39, end: 60 },
   // thuyết minh 1945 chỉ quét băng đầu (chữ ngày tháng); đọc xong mới tới bản
   // ghi Tuyên ngôn ở băng giữa (DECL_SCROLL), rồi ĐỘC LẬP / TỰ DO
-  { id: 'chapter-1945', part: 2, start: 60, end: 83, scroll: [0, 0.46] },
+  { id: 'chapter-1945', part: 2, start: 60, end: 83, scroll: [0, 0.34] },
   { id: 'chapter-1954', part: 2, start: 83, end: 98 },
   { id: 'map', part: 2, start: 98, end: 116 },
   { id: 'gallery', part: 2, start: 116, end: 135 },
