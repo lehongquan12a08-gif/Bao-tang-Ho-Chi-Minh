@@ -51,6 +51,15 @@ export default function Footer() {
         sao, hoa văn). Vui lòng bảo đảm quyền sử dụng hình ảnh, và đối chiếu trích
         dẫn cùng dữ kiện lịch sử với nguồn chính thống trước khi sử dụng chính thức.
       </Reveal>
+
+      {/* Author credit */}
+      <Reveal className="mt-16 flex flex-col items-center gap-3" y={0}>
+        <span className="inline-block h-2 w-2 rotate-45 bg-vn-gold" />
+        <p className="eyebrow text-vn-ivory/45">Thực hiện</p>
+        <p className="font-display text-2xl font-semibold uppercase tracking-[0.22em] text-vn-gold md:text-3xl">
+          Lê Hồng Quân
+        </p>
+      </Reveal>
     </footer>
   );
 }
