@@ -38,7 +38,9 @@ export const NARRATION: NarrationCue[] = [
   { id: 'chapter-1945', part: 2, start: 60, end: 74, scroll: [0, 0.3] },
   { id: 'chapter-1954', part: 2, start: 83, end: 98 },
   { id: 'map', part: 2, start: 98, end: 116 },
-  { id: 'gallery', part: 2, start: 116, end: 130 },
-  // (Nghe & Xem / media không có cue — để im, người xem tự bấm mở video)
-  { id: 'footer', part: 2, start: 135, end: 153 },
+  // khớp giọng đọc với đúng thứ tự trên trang: sau "VIỆT NAM…" là màn chữ
+  // "MỘT CUỘC ĐỜI · VÌ DÂN · VÌ NƯỚC", rồi tới ảnh Bác khép lại hành trình
+  { id: 'chapter-vi-dan', part: 2, start: 116, end: 133 },
+  { id: 'final', part: 2, start: 133, end: 153 },
+  // Tư liệu (gallery), Nghe & Xem (media), footer — để im, người xem tự xem
 ];
