@@ -1,6 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { NARRATION, NARRATION_FILES, type NarrationCue } from '@/data/narration';
+
+// per-chapter voiceover volume (relative to master)
+const NARR_VOL = 0.98;
 
 // Background music (loops) + per-chapter ambience. Some clips are `loop:false`
 // one-shots (e.g. the real Tuyên ngôn recording) that fire inside a scroll
@@ -56,6 +60,12 @@ export default function AudioController() {
   const duckRef = useRef(false);
   const ambTargetRef = useRef(-1);
 
+  // narration (per-chapter voiceover, played as segments of 2 files)
+  const narrRef = useRef<Map<1 | 2, HTMLAudioElement>>(new Map());
+  const narrActiveRef = useRef<string | null>(null);
+  const narrEndRef = useRef(0);
+  const narrElRef = useRef<HTMLAudioElement | null>(null);
+
   // create audio elements once
   useEffect(() => {
     const amb = new Audio(AMBIENT_SRC);
@@ -74,6 +84,19 @@ export default function AudioController() {
     }
     sfxRef.current = m;
 
+    // narration files (2 parts) — stop each at its current segment's end
+    const nm = new Map<1 | 2, HTMLAudioElement>();
+    ([1, 2] as const).forEach((part) => {
+      const a = new Audio(NARRATION_FILES[part]);
+      a.preload = 'auto';
+      a.volume = 0;
+      a.addEventListener('timeupdate', () => {
+        if (a === narrElRef.current && a.currentTime >= narrEndRef.current) a.pause();
+      });
+      nm.set(part, a);
+    });
+    narrRef.current = nm;
+
     let v = 0.8;
     try {
       const sv = localStorage.getItem(LS_VOL);
@@ -87,6 +110,7 @@ export default function AudioController() {
     return () => {
       amb.pause();
       m.forEach((a) => a.pause());
+      nm.forEach((a) => a.pause());
     };
   }, []);
 
@@ -124,6 +148,43 @@ export default function AudioController() {
       }
     }
 
+    // --- narration: play the current chapter's voiceover segment ---------
+    let narrCue: NarrationCue | null = null;
+    for (const c of NARRATION) {
+      const el = document.getElementById(c.id);
+      if (!el) continue;
+      const r = el.getBoundingClientRect();
+      if (r.top <= mid && r.bottom >= mid) {
+        narrCue = c;
+        break;
+      }
+    }
+    if (narrCue) {
+      if (narrCue.id !== narrActiveRef.current) {
+        const a = narrRef.current.get(narrCue.part);
+        narrRef.current.forEach((other) => {
+          if (other !== a) other.pause();
+        });
+        if (a) {
+          narrActiveRef.current = narrCue.id;
+          narrEndRef.current = narrCue.end;
+          try {
+            a.currentTime = narrCue.start;
+          } catch {
+            /* ignore */
+          }
+          a.volume = clamp(NARR_VOL * master);
+          a.play().catch(() => {});
+          narrElRef.current = a;
+        }
+      }
+    } else if (narrActiveRef.current) {
+      narrRef.current.forEach((a) => a.pause());
+      narrActiveRef.current = null;
+      narrElRef.current = null;
+    }
+    if (narrElRef.current && !narrElRef.current.paused) ducking = true;
+
     duckRef.current = ducking;
     const ambTarget = AMBIENT_VOL * master * (ducking ? 0.3 : 1);
     if (ambientRef.current && Math.abs(ambTarget - ambTargetRef.current) > 0.001) {
@@ -155,6 +216,9 @@ export default function AudioController() {
     }
     if (ambientRef.current) fadeTo(ambientRef.current, 0, 600);
     sfxRef.current.forEach((a) => fadeTo(a, 0, 600));
+    narrRef.current.forEach((a) => a.pause());
+    narrActiveRef.current = null;
+    narrElRef.current = null;
   }, []);
 
   // volume slider — apply instantly to whatever is playing
@@ -174,6 +238,9 @@ export default function AudioController() {
     for (const s of SFX) {
       const a = sfxRef.current.get(s.src);
       if (a && !a.paused) a.volume = clamp(s.vol * v);
+    }
+    if (narrElRef.current && !narrElRef.current.paused) {
+      narrElRef.current.volume = clamp(NARR_VOL * v);
     }
   }, []);
 
@@ -229,6 +296,9 @@ export default function AudioController() {
       if (document.hidden) {
         ambientRef.current?.pause();
         sfxRef.current.forEach((a) => a.pause());
+        narrRef.current.forEach((a) => a.pause());
+        narrActiveRef.current = null; // replay current chapter's line on return
+        narrElRef.current = null;
       } else {
         ambientRef.current?.play().catch(() => {});
         apply();

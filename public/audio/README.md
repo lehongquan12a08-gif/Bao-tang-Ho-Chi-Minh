@@ -41,6 +41,13 @@ Sửa hằng số trong `components/AudioController.tsx`:
 - Mảng `SFX` — thêm/bớt `{ id: '<id-section>', src, vol }`. `id` phải trùng
   thuộc tính `id` của `<section>` chương (vd. `chapter-1941`).
 
+## Lồng tiếng theo chương (voiceover)
+- File: `public/audio/voice/part-1.m4a` (mở đầu → 1920), `part-2.m4a` (30 năm → kết).
+- Khi bật âm thanh và cuộn tới một chương, hệ thống **phát đúng đoạn** trong file
+  (đặt `currentTime`), tự dừng ở cuối đoạn, và **hạ nhạc nền** cho rõ giọng.
+- **Chỉnh mốc thời gian:** mở `data/narration.ts`, sửa `start`/`end` (giây) từng
+  chương cho khớp giọng đọc. Đây là các số ƯỚC LƯỢNG — nghe rồi tinh chỉnh.
+
 ## ⚠️ Bản quyền
 Chỉ dùng nhạc/âm thanh bạn có quyền (mua, tự làm, hoặc CC0/royalty-free đúng giấy
 phép). Nếu giấy phép yêu cầu ghi công (CC-BY), thêm dòng credit ở mục "Về dự án".

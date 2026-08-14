@@ -1,0 +1,37 @@
+// LỒNG TIẾNG THEO CHƯƠNG — phát đúng ĐOẠN trong 2 file voice (không cần cắt file).
+// Khi cuộn tới một chương, hệ thống đặt currentTime = start, phát tới end rồi dừng.
+//
+//  Part 1 = /audio/voice/part-1.m4a  (~86.7s)  — mở đầu → 1920
+//  Part 2 = /audio/voice/part-2.m4a  (~153.5s) — 30 năm → kết
+//
+//  ⚠️ CÁC MỐC DƯỚI ĐÂY LÀ ƯỚC LƯỢNG. Bạn nghe 2 file rồi chỉnh `start`/`end`
+//     (đơn vị: giây) cho khớp giọng đọc. Chỉ sửa số, không cần đụng code.
+export interface NarrationCue {
+  id: string; // id của <section> chương
+  part: 1 | 2;
+  start: number; // giây
+  end: number; // giây
+}
+
+export const NARRATION_FILES: Record<1 | 2, string> = {
+  1: '/audio/voice/part-1.m4a',
+  2: '/audio/voice/part-2.m4a',
+};
+
+export const NARRATION: NarrationCue[] = [
+  // ── Part 1 (mở đầu → 1920) ──────────────────────────────
+  { id: 'hero', part: 1, start: 0, end: 15 },
+  { id: 'chapter-1890', part: 1, start: 15, end: 33 },
+  { id: 'chapter-1911', part: 1, start: 33, end: 52 },
+  { id: 'chapter-1919', part: 1, start: 52, end: 68 },
+  { id: 'chapter-1920', part: 1, start: 68, end: 86 },
+  // ── Part 2 (30 năm → kết) ───────────────────────────────
+  { id: 'chapter-nguyen-ai-quoc', part: 2, start: 0, end: 24 },
+  { id: 'chapter-1930', part: 2, start: 24, end: 39 },
+  { id: 'chapter-1941', part: 2, start: 39, end: 60 },
+  { id: 'chapter-1945', part: 2, start: 60, end: 83 },
+  { id: 'chapter-1954', part: 2, start: 83, end: 98 },
+  { id: 'map', part: 2, start: 98, end: 116 },
+  { id: 'gallery', part: 2, start: 116, end: 135 },
+  { id: 'footer', part: 2, start: 135, end: 153 },
+];
