@@ -6,10 +6,12 @@ import { narrationState } from '@/lib/narrationState';
 
 // The voice recordings are a bit quiet, so lift them with a Web Audio gain
 // (can exceed 1.0, unlike element.volume). Master slider still scales it.
-const NARR_BOOST = 2.1;
+const NARR_BOOST = 2.8;
+// makeup gain after the compressor — lifts the overall voice level
+const VOICE_MAKEUP = 1.5;
 // the Tuyên ngôn recording is also a voice — lift it close to the narration
 const DECL_SRC = '/audio/sfx/declaration-1945.mp3';
-const DECL_BOOST = 1.9;
+const DECL_BOOST = 2.5;
 // how much the supporting sounds (music + waves/wind/crowd) drop while a voice
 // (narration or the Tuyên ngôn recording) is speaking
 const AMBIENT_DUCK = 0.18;
@@ -115,9 +117,13 @@ export default function AudioController() {
       if (AC) {
         const ctx = new AC();
         narrCtxRef.current = ctx;
-        // shared compressor tames peaks so the boost doesn't distort
+        // compressor tames peaks so the boost doesn't distort, then a makeup
+        // gain lifts the overall (louder) level
         const comp = ctx.createDynamicsCompressor();
-        comp.connect(ctx.destination);
+        const makeup = ctx.createGain();
+        makeup.gain.value = VOICE_MAKEUP;
+        comp.connect(makeup);
+        makeup.connect(ctx.destination);
         nm.forEach((a) => {
           const src = ctx.createMediaElementSource(a);
           const g = ctx.createGain();

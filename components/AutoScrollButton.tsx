@@ -7,8 +7,8 @@ import { narrationState } from '@/lib/narrationState';
 // Auto-scroll pace (px/s). When narration is on, follow the voice: creep while
 // it speaks, glide through the silent gaps. Otherwise a steady cinematic pace.
 const SPEED = 240;
-const SPEED_VOICE = 90; // while a voice is speaking
-const SPEED_GAP = 520; // through the silent gaps between narrated chapters
+const SPEED_VOICE = 0; // HOLD while a voice is speaking (finish reading first)
+const SPEED_GAP = 520; // then glide through the silent gap to the next chapter
 const RING = 2 * Math.PI * 15; // circumference for r=15 progress ring
 
 export default function AutoScrollButton() {
