@@ -83,6 +83,7 @@ export default function AudioController() {
 
   const ambientRef = useRef<HTMLAudioElement | null>(null);
   const ambientVolRef = useRef(AMBIENT_VOL); // lower on mobile
+  const declVideoVolRef = useRef(DECL_VIDEO_VOL); // device-specific video level
   const sfxRef = useRef<Map<string, HTMLAudioElement>>(new Map());
   const enabledRef = useRef(false);
   const masterRef = useRef(0.8);
@@ -118,7 +119,8 @@ export default function AudioController() {
     // narration — "tiếng sông" too loud. Skip them entirely on touch: keep just
     // the narration + ambient music + the Tuyên ngôn video.
     const isTouch = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
-    ambientVolRef.current = isTouch ? 0.1 : AMBIENT_VOL; // quieter music on phones
+    ambientVolRef.current = isTouch ? 0.06 : AMBIENT_VOL; // quieter music on phones
+    declVideoVolRef.current = isTouch ? 0.05 : 0.2; // Tuyên ngôn video level
     const m = new Map<string, HTMLAudioElement>();
     if (!isTouch) {
       for (const s of SFX) {
@@ -318,7 +320,7 @@ export default function AudioController() {
             /* ignore */
           }
           declVideo.muted = false;
-          declVideo.volume = clamp(master * DECL_VIDEO_VOL);
+          declVideo.volume = clamp(master * declVideoVolRef.current);
           declVideo.play().catch(() => {});
         } else if (!inRange && declFiredRef.current) {
           declFiredRef.current = false;
@@ -480,7 +482,7 @@ export default function AudioController() {
       narrElRef.current.volume = clamp(v); // Web Audio gain applies the boost
     }
     const dv = getDeclVideo();
-    if (dv && !dv.paused) dv.volume = clamp(v * DECL_VIDEO_VOL);
+    if (dv && !dv.paused) dv.volume = clamp(v * declVideoVolRef.current);
   }, []);
 
   // restore on/off preference (needs a user gesture to actually start audio)
