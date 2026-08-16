@@ -34,10 +34,10 @@ export default function Chapter1911() {
       tl.fromTo(q('.ship-svg'), { left: '6%' }, { left: '94%', ease: 'none' }, 0)
         .fromTo(q('.journey-fill'), { scaleX: 0.06 }, { scaleX: 0.94, ease: 'none' }, 0);
 
-      // three-word headline builds
-      tl.fromTo(q('.w-radi'), { opacity: 0, y: 40 }, { opacity: 1, y: 0 }, 0.05)
-        .fromTo(q('.w-tim'), { opacity: 0, y: 40 }, { opacity: 1, y: 0 }, 0.28)
-        .fromTo(q('.w-cuu'), { opacity: 0, y: 40 }, { opacity: 1, y: 0 }, 0.5);
+      // three-word headline builds — quicker (all in view earlier)
+      tl.fromTo(q('.w-radi'), { opacity: 0, y: 40 }, { opacity: 1, y: 0 }, 0.04)
+        .fromTo(q('.w-tim'), { opacity: 0, y: 40 }, { opacity: 1, y: 0 }, 0.16)
+        .fromTo(q('.w-cuu'), { opacity: 0, y: 40 }, { opacity: 1, y: 0 }, 0.28);
     },
     { scope: root }
   );
