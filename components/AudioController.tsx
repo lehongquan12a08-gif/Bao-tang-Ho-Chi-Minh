@@ -297,7 +297,10 @@ export default function AudioController() {
           declFiredRef.current = false;
           declVideo.pause();
         }
-        declActive = inRange && declFiredRef.current && !declVideo.ended;
+        // only treat it as "the voice" while it is ACTUALLY playing — if the
+        // browser blocks autoplay-with-sound the video stays paused, and we must
+        // NOT duck / pause the narration (that would leave the scene silent)
+        declActive = inRange && declFiredRef.current && !declVideo.paused && !declVideo.ended;
       }
     }
 
