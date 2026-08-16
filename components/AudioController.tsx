@@ -432,15 +432,28 @@ export default function AudioController() {
         enable();
         window.removeEventListener('pointerdown', resume);
         window.removeEventListener('wheel', resume);
-        window.removeEventListener('keydown', resume);
+        window.removeEventListener('keydown', onKey);
+      };
+      // Only genuine content interaction should start audio — NOT browser/system
+      // keys like F11 (fullscreen), Escape, Tab or bare modifiers.
+      const onKey = (e: KeyboardEvent) => {
+        if (
+          /^F\d+$/.test(e.key) ||
+          e.key === 'Escape' ||
+          e.key === 'Tab' ||
+          ['Shift', 'Control', 'Alt', 'Meta'].includes(e.key)
+        ) {
+          return;
+        }
+        resume();
       };
       window.addEventListener('pointerdown', resume, { once: true });
       window.addEventListener('wheel', resume, { once: true, passive: true });
-      window.addEventListener('keydown', resume, { once: true });
+      window.addEventListener('keydown', onKey);
       return () => {
         window.removeEventListener('pointerdown', resume);
         window.removeEventListener('wheel', resume);
-        window.removeEventListener('keydown', resume);
+        window.removeEventListener('keydown', onKey);
       };
     }
     if (saved === null) {
