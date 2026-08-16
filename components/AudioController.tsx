@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { NARRATION, NARRATION_FILES, type NarrationCue } from '@/data/narration';
 import { narrationState } from '@/lib/narrationState';
-import { initUiSound } from '@/lib/uiSound';
+import { initUiSound, resumeUiSound } from '@/lib/uiSound';
 import { getDeclVideo } from '@/lib/declVideo';
 
 // The voice recordings are a bit quiet, so lift them with a Web Audio gain
@@ -501,6 +501,31 @@ export default function AudioController() {
       );
     }, 100);
     return () => window.clearInterval(id);
+  }, []);
+
+  // Keep the Web Audio contexts awake. Mobile OSes suspend them aggressively
+  // (a stray touch, app-switch, audio interruption), which silences the boosted
+  // narration even though the elements still "play". Re-wake on every interaction
+  // and on a slow tick so sound never stays dead.
+  useEffect(() => {
+    const wake = () => {
+      if (!enabledRef.current) return;
+      const ctx = narrCtxRef.current;
+      if (ctx && ctx.state === 'suspended') ctx.resume().catch(() => {});
+      resumeUiSound();
+    };
+    window.addEventListener('pointerdown', wake);
+    window.addEventListener('touchstart', wake, { passive: true });
+    window.addEventListener('touchend', wake, { passive: true });
+    document.addEventListener('visibilitychange', wake);
+    const id = window.setInterval(wake, 1000);
+    return () => {
+      window.removeEventListener('pointerdown', wake);
+      window.removeEventListener('touchstart', wake);
+      window.removeEventListener('touchend', wake);
+      document.removeEventListener('visibilitychange', wake);
+      window.clearInterval(id);
+    };
   }, []);
 
   // pause when the tab is hidden

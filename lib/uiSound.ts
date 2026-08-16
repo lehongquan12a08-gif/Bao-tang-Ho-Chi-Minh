@@ -16,6 +16,11 @@ let last = 0;
 let ctx: AudioContext | null = null;
 let gain: GainNode | null = null;
 
+// Re-wake the chime context if the OS suspended it (mobile does this a lot).
+export function resumeUiSound() {
+  if (ctx && ctx.state === 'suspended') ctx.resume().catch(() => {});
+}
+
 export function initUiSound() {
   if (typeof Audio === 'undefined' || pool.length) return;
   // shared gain → limiter → destination: the gain lets the warm tone exceed the
