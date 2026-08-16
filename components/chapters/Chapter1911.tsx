@@ -76,7 +76,7 @@ export default function Chapter1911() {
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] h-[30vh] bg-gradient-to-t from-vn-black/85 to-transparent" />
 
         {/* original harbour-mist texture (generated asset) */}
-        <TextureBg src="/images/mist.webp" className="z-[1] opacity-25 mix-blend-overlay" />
+        <TextureBg src="/images/mist-lite.webp" className="z-[1] opacity-25 mix-blend-overlay" />
 
         {/* year — a clear gold number ABOVE the headline (never overlaps it) */}
         <div

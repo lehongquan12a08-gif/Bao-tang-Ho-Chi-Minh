@@ -68,7 +68,7 @@ export default function Hero() {
         />
 
         {/* faint original starfield */}
-        <TextureBg src="/images/stars.webp" className="opacity-50" />
+        <TextureBg src="/images/stars-lite.webp" className="opacity-50" />
 
         {/* symbolic gold star, behind the portrait */}
         <div className="hero-star will-transform pointer-events-none absolute left-1/2 top-[42%] -translate-x-1/2 -translate-y-1/2 opacity-40">

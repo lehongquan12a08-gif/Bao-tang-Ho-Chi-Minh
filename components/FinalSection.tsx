@@ -35,7 +35,7 @@ export default function FinalSection() {
       ref={root}
       className="relative flex min-h-screen items-center justify-center overflow-hidden bg-vn-black py-[16vh]"
     >
-      <TextureBg src="/images/stars.webp" className="opacity-45" />
+      <TextureBg src="/images/stars-lite.webp" className="opacity-45" />
 
       <div className="final-star will-transform pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[56%] opacity-0">
         <GoldStar breathe className="h-[46vh] w-[46vh]" />

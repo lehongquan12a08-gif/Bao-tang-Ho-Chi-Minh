@@ -81,7 +81,7 @@ export default function Chapter1890() {
         />
 
         {/* original aged-paper texture (generated asset) */}
-        <TextureBg src="/images/paper.webp" className="z-[1] opacity-[0.22] mix-blend-overlay" />
+        <TextureBg src="/images/paper-lite.webp" className="z-[1] opacity-[0.22] mix-blend-overlay" />
 
         {/* faint historical texture wash */}
         <div

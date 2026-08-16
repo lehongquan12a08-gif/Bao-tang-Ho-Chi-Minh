@@ -45,11 +45,11 @@ export default function VietnamMapSection() {
       }}
     >
       <div className="sticky top-0 flex h-screen items-center justify-center overflow-hidden">
-        <TextureBg src="/images/stars.webp" className="opacity-40" />
+        <TextureBg src="/images/stars-lite.webp" className="opacity-40" />
 
         {/* red silk field of the flag */}
         <div className="vn-field will-transform relative flex h-[62vh] w-[62vh] items-center justify-center overflow-hidden rounded-[2px]">
-          <TextureBg src="/images/silk.webp" className="scale-110" />
+          <TextureBg src="/images/silk-lite.webp" className="scale-110" />
           <div
             className="absolute inset-0"
             style={{
