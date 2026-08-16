@@ -36,8 +36,10 @@ const NARR_FADE_MS = 850;
 // Bump when a generated audio file changes so browsers fetch the new version
 // instead of a cached copy of the same filename.
 const V = 'v=5';
-const AMBIENT_SRC = `/audio/ambient.wav?${V}`;
-const AMBIENT_VOL = 0.18;
+// baked-quiet ambient (30% of the original) so it's low even on iOS where
+// element.volume is ignored; desktop compensates via AMBIENT_VOL below.
+const AMBIENT_SRC = `/audio/ambient-lo.wav?v=6`;
+const AMBIENT_VOL = 0.6;
 
 // `voice: true` = a spoken clip (kept loud, ducks everything else).
 type Sfx = { id: string; src: string; vol: number; loop?: boolean; range?: [number, number]; voice?: boolean };
@@ -121,7 +123,7 @@ export default function AudioController() {
     // narration — "tiếng sông" too loud. Skip them entirely on touch: keep just
     // the narration + ambient music + the Tuyên ngôn video.
     const isTouch = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
-    ambientVolRef.current = isTouch ? 0.06 : AMBIENT_VOL; // quieter music on phones
+    ambientVolRef.current = isTouch ? 0.3 : AMBIENT_VOL; // quieter music on phones (Android)
     declVideoVolRef.current = isTouch ? 0.1 : 0.2; // Tuyên ngôn video level
     const m = new Map<string, HTMLAudioElement>();
     if (!isTouch) {
@@ -174,19 +176,10 @@ export default function AudioController() {
           src.connect(g);
           g.connect(comp);
         });
-        // route the ambient music through its own gain too — iOS ignores
-        // element.volume, so the only way to make the music quieter there is a
-        // Web Audio gain. element.volume stays 1; this gain sets the real level.
-        try {
-          const ag = ctx.createGain();
-          ag.gain.value = 0;
-          ctx.createMediaElementSource(amb).connect(ag);
-          ag.connect(ctx.destination);
-          ambientGainRef.current = ag;
-          amb.volume = 1;
-        } catch {
-          /* already routed / unavailable */
-        }
+        // NOTE: do NOT route the ambient here — adding another Web Audio source
+        // pushed iOS over its media-source limit (narration silenced + tab crash).
+        // Instead the ambient WAV is baked quieter (see AMBIENT_SRC) so it's low
+        // even on iOS (where element.volume is ignored).
       }
     } catch {
       /* Web Audio unavailable → narration plays at element volume */
