@@ -32,15 +32,23 @@ export function useSmoothScroll(): void {
       }
       ScrollTrigger.refresh();
       const refresh = () => ScrollTrigger.refresh();
+      // Only refresh on a real size change (orientation) — NOT the height-only
+      // resize the mobile URL bar fires on every scroll, which would reset the
+      // pinned sections and make the first one look like it "repeats".
+      let lastW = window.innerWidth;
+      const onResize = () => {
+        if (window.innerWidth !== lastW) {
+          lastW = window.innerWidth;
+          refresh();
+        }
+      };
       window.addEventListener('load', refresh);
-      window.addEventListener('resize', refresh);
-      document.addEventListener('fullscreenchange', refresh);
+      window.addEventListener('resize', onResize);
       const settle = window.setTimeout(refresh, 600);
       return () => {
         window.removeEventListener('scroll', onScroll);
         window.removeEventListener('load', refresh);
-        window.removeEventListener('resize', refresh);
-        document.removeEventListener('fullscreenchange', refresh);
+        window.removeEventListener('resize', onResize);
         window.clearTimeout(settle);
       };
     }
