@@ -54,12 +54,30 @@ export function useSmoothScroll(): void {
     window.addEventListener('load', refresh);
     const settle = window.setTimeout(refresh, 600);
 
+    // Recalculate when the viewport size changes — notably entering/leaving
+    // browser fullscreen (F11), which changes innerHeight and would otherwise
+    // leave the pinned/sticky sections misaligned. Debounced so it runs once the
+    // new layout has settled; it only recomputes positions (safe, non-visual).
+    let rt = 0;
+    const onResize = () => {
+      window.clearTimeout(rt);
+      rt = window.setTimeout(() => {
+        lenis.resize();
+        ScrollTrigger.refresh();
+      }, 160);
+    };
+    window.addEventListener('resize', onResize);
+    document.addEventListener('fullscreenchange', onResize);
+
     return () => {
       gsap.ticker.remove(raf);
       lenis.destroy();
       setLenis(null);
       window.removeEventListener('load', refresh);
       window.clearTimeout(settle);
+      window.clearTimeout(rt);
+      window.removeEventListener('resize', onResize);
+      document.removeEventListener('fullscreenchange', onResize);
     };
   }, []);
 }
