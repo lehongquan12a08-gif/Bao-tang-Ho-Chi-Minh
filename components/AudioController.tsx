@@ -82,6 +82,7 @@ export default function AudioController() {
   const [tune, setTune] = useState<string | null>(null); // #tune debug readout
 
   const ambientRef = useRef<HTMLAudioElement | null>(null);
+  const ambientGainRef = useRef<GainNode | null>(null); // iOS-safe ambient volume
   const ambientVolRef = useRef(AMBIENT_VOL); // lower on mobile
   const declVideoVolRef = useRef(DECL_VIDEO_VOL); // device-specific video level
   const declGainRef = useRef<GainNode | null>(null); // iOS-safe video volume
@@ -121,7 +122,7 @@ export default function AudioController() {
     // the narration + ambient music + the Tuyên ngôn video.
     const isTouch = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
     ambientVolRef.current = isTouch ? 0.06 : AMBIENT_VOL; // quieter music on phones
-    declVideoVolRef.current = isTouch ? 0.05 : 0.2; // Tuyên ngôn video level
+    declVideoVolRef.current = isTouch ? 0.1 : 0.2; // Tuyên ngôn video level
     const m = new Map<string, HTMLAudioElement>();
     if (!isTouch) {
       for (const s of SFX) {
@@ -173,6 +174,19 @@ export default function AudioController() {
           src.connect(g);
           g.connect(comp);
         });
+        // route the ambient music through its own gain too — iOS ignores
+        // element.volume, so the only way to make the music quieter there is a
+        // Web Audio gain. element.volume stays 1; this gain sets the real level.
+        try {
+          const ag = ctx.createGain();
+          ag.gain.value = 0;
+          ctx.createMediaElementSource(amb).connect(ag);
+          ag.connect(ctx.destination);
+          ambientGainRef.current = ag;
+          amb.volume = 1;
+        } catch {
+          /* already routed / unavailable */
+        }
       }
     } catch {
       /* Web Audio unavailable → narration plays at element volume */
@@ -224,6 +238,33 @@ export default function AudioController() {
     narrationState.speaking = true;
     narrWatchRef.current = requestAnimationFrame(narrWatch);
   }, [stopNarrWatch]);
+
+  // set the ambient-music level. Prefer the Web Audio gain (works on iOS, where
+  // element.volume is ignored); fall back to element.volume otherwise.
+  const setAmbient = useCallback((target: number, ms: number) => {
+    const amb = ambientRef.current;
+    if (!amb) return;
+    const g = ambientGainRef.current;
+    const ctx = narrCtxRef.current;
+    if (g && ctx) {
+      if (target > 0 && amb.paused) {
+        amb.muted = false;
+        amb.volume = 1;
+        amb.play().catch(() => {});
+      }
+      const now = ctx.currentTime;
+      g.gain.cancelScheduledValues(now);
+      g.gain.setValueAtTime(Math.max(0.0001, g.gain.value), now);
+      g.gain.linearRampToValueAtTime(Math.max(0.0001, target), now + ms / 1000);
+      if (target <= 0.0001) {
+        window.setTimeout(() => {
+          if (ambientGainRef.current && ambientGainRef.current.gain.value <= 0.002) amb.pause();
+        }, ms + 60);
+      }
+    } else {
+      fadeTo(amb, target, ms);
+    }
+  }, []);
 
   // update which ambience plays, honouring scroll `range` + master volume + duck
   const apply = useCallback(() => {
@@ -395,9 +436,9 @@ export default function AudioController() {
     const ambTarget = ambientVolRef.current * master * (voice ? AMBIENT_DUCK : 1);
     if (ambientRef.current && Math.abs(ambTarget - ambTargetRef.current) > 0.001) {
       ambTargetRef.current = ambTarget;
-      fadeTo(ambientRef.current, ambTarget, 700);
+      setAmbient(ambTarget, 700);
     }
-  }, [narrWatch, stopNarrWatch]);
+  }, [narrWatch, stopNarrWatch, setAmbient]);
 
   const enable = useCallback(() => {
     enabledRef.current = true;
@@ -460,7 +501,7 @@ export default function AudioController() {
     } catch {
       /* ignore */
     }
-    if (ambientRef.current) fadeTo(ambientRef.current, 0, 600);
+    setAmbient(0, 600);
     sfxRef.current.forEach((a) => fadeTo(a, 0, 600));
     narrRef.current.forEach((a) => a.pause());
     narrActiveRef.current = null;
@@ -474,7 +515,7 @@ export default function AudioController() {
     narrationState.activeId = null;
     narrationState.progress = 0;
     narrationState.enabled = false;
-  }, [stopNarrWatch]);
+  }, [stopNarrWatch, setAmbient]);
 
   // volume slider — apply instantly to whatever is playing
   const onVolume = useCallback((v: number) => {
@@ -488,9 +529,11 @@ export default function AudioController() {
     }
     if (!enabledRef.current) return;
     const d = duckRef.current;
-    if (ambientRef.current && !ambientRef.current.paused) {
-      const t = ambientVolRef.current * v * (d ? AMBIENT_DUCK : 1);
-      ambientRef.current.volume = clamp(t);
+    const amb = ambientRef.current;
+    if (amb && !amb.paused) {
+      const t = clamp(ambientVolRef.current * v * (d ? AMBIENT_DUCK : 1));
+      if (ambientGainRef.current) ambientGainRef.current.gain.value = t;
+      else amb.volume = t;
       ambTargetRef.current = t;
     }
     for (const s of SFX) {
