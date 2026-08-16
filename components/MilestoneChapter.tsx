@@ -48,11 +48,12 @@ export default function MilestoneChapter({ milestone: m }: { milestone: Mileston
       });
       // gentle Ken Burns only on full-bleed photos (contained images stay still)
       if (!m.contain) tl.fromTo(q('.m-bgphoto'), { scale: 1.08 }, { scale: 1, ease: 'none' }, 0);
-      else tl.fromTo(q('.m-frame'), { opacity: 0, y: 40 }, { opacity: 1, y: 0 }, 0.04);
-      tl.fromTo(q('.m-year'), { opacity: 0, y: 50 }, { opacity: 1, y: 0 }, 0.06)
-        .fromTo(q('.m-head'), { opacity: 0, y: 30 }, { opacity: 1, y: 0 }, 0.2)
-        .fromTo(q('.m-key'), { opacity: 0, scale: 1.15 }, { opacity: 1, scale: 1 }, 0.34)
-        .fromTo(q('.m-cap'), { opacity: 0 }, { opacity: 1 }, 0.46);
+      else tl.fromTo(q('.m-frame'), { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.05 }, 0.02);
+      // reveal earlier/tighter so the text keeps up with the voiceover
+      tl.fromTo(q('.m-year'), { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.05 }, 0.03)
+        .fromTo(q('.m-head'), { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.05 }, 0.1)
+        .fromTo(q('.m-key'), { opacity: 0, scale: 1.15 }, { opacity: 1, scale: 1, duration: 0.05 }, 0.18)
+        .fromTo(q('.m-cap'), { opacity: 0 }, { opacity: 1, duration: 0.05 }, 0.26);
     },
     { scope: root }
   );

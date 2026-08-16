@@ -27,12 +27,12 @@ export default function Chapter1945() {
       });
 
       // ---- Act A : the date builds and holds (no flashing/black) ---------
-      tl.call(playChime, [0], 0.03)
-        .fromTo(q('.g-02'), { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.02 }, 0.03)
-        .call(playChime, [1], 0.06)
-        .fromTo(q('.g-09'), { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.02 }, 0.06)
-        .call(playChime, [2], 0.09)
-        .fromTo(q('.g-1945'), { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.02 }, 0.09)
+      tl.call(playChime, [0], 0.02)
+        .fromTo(q('.g-02'), { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.015 }, 0.02)
+        .call(playChime, [1], 0.04)
+        .fromTo(q('.g-09'), { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.015 }, 0.04)
+        .call(playChime, [2], 0.06)
+        .fromTo(q('.g-1945'), { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.015 }, 0.06)
         // whole date holds, then lifts away before the scene
         .to(q('.date-line'), { opacity: 0, y: -30, duration: 0.05 }, 0.34);
 
