@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import type Lenis from 'lenis';
 import { NAV_LINKS } from '@/data/timeline';
+import { onLenis } from '@/lib/lenisStore';
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -16,13 +18,27 @@ export default function Navbar() {
       const y = window.scrollY;
       setScrolled(y > 40);
       if (y < 90) setHidden(false);
-      else if (y > lastY.current + 6) setHidden(true);
-      else if (y < lastY.current - 6) setHidden(false);
+      // small down-threshold so the slow auto-scroll (~3-4px/frame) also hides it
+      else if (y > lastY.current + 2) setHidden(true);
+      else if (y < lastY.current - 8) setHidden(false);
       lastY.current = y;
     };
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    // Lenis (desktop) doesn't fire native scroll during its smooth / auto-scroll,
+    // so also listen to Lenis's own scroll event — otherwise the bar wouldn't
+    // hide while auto-scrolling.
+    let bound: Lenis | null = null;
+    const off = onLenis((l) => {
+      if (bound) bound.off('scroll', onScroll);
+      bound = l;
+      if (l) l.on('scroll', onScroll);
+    });
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      if (bound) bound.off('scroll', onScroll);
+      off();
+    };
   }, []);
 
   // Lock body scroll while the mobile menu is open.

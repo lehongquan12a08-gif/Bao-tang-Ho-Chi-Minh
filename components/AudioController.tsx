@@ -5,6 +5,8 @@ import { NARRATION, NARRATION_FILES, type NarrationCue } from '@/data/narration'
 import { narrationState } from '@/lib/narrationState';
 import { initUiSound, resumeUiSound } from '@/lib/uiSound';
 import { getDeclVideo } from '@/lib/declVideo';
+import { onLenis } from '@/lib/lenisStore';
+import type Lenis from 'lenis';
 
 // The voice recordings are a bit quiet, so lift them with a Web Audio gain
 // (can exceed 1.0, unlike element.volume). Master slider still scales it.
@@ -55,7 +57,10 @@ const fades = new Map<HTMLAudioElement, number>();
 function fadeTo(el: HTMLAudioElement, target: number, ms = 900) {
   const prev = fades.get(el);
   if (prev) cancelAnimationFrame(prev);
-  if (target > 0 && el.paused) el.play().catch(() => {});
+  if (target > 0 && el.paused) {
+    el.muted = false; // in case the mobile-unlock left it muted
+    el.play().catch(() => {});
+  }
   const from = el.volume;
   const start = performance.now();
   const tick = (t: number) => {
@@ -238,6 +243,7 @@ export default function AudioController() {
             cancelAnimationFrame(pf);
             fades.delete(a);
           }
+          a.muted = false; // in case the mobile-unlock left it muted
           a.volume = clamp(master); // Web Audio gain adds the boost on top
           narrCtxRef.current?.resume().catch(() => {});
           a.play().catch(() => {});
@@ -365,6 +371,35 @@ export default function AudioController() {
     narrationState.enabled = true;
     narrationState.volume = masterRef.current;
     initUiSound();
+    // MOBILE UNLOCK: this runs inside the tap gesture. Play+pause every media
+    // element (muted) so the browser marks each as user-initiated and lets us
+    // play it programmatically later. Without this, mobile silently blocks the
+    // 2nd narration file (part-2) since it was never played within a gesture —
+    // which drops all narration from "30 NĂM"/1930 onward.
+    const unlock = (el: HTMLMediaElement) => {
+      try {
+        el.muted = true;
+        const p = el.play();
+        if (p && typeof p.then === 'function') {
+          p.then(() => {
+            el.pause();
+            el.muted = false;
+          }).catch(() => {
+            el.muted = false;
+          });
+        } else {
+          el.pause();
+          el.muted = false;
+        }
+      } catch {
+        /* ignore */
+      }
+    };
+    if (ambientRef.current) unlock(ambientRef.current);
+    narrRef.current.forEach(unlock);
+    sfxRef.current.forEach(unlock);
+    const dv = getDeclVideo();
+    if (dv) unlock(dv);
     ambTargetRef.current = -1; // force ambient re-fade
     apply();
   }, [apply]);
@@ -480,7 +515,19 @@ export default function AudioController() {
       });
     };
     window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    // Lenis (desktop) doesn't fire native scroll during smooth / auto-scroll —
+    // also listen to its own scroll event so audio starts + follows there too.
+    let bound: Lenis | null = null;
+    const off = onLenis((l) => {
+      if (bound) bound.off('scroll', onScroll);
+      bound = l;
+      if (l) l.on('scroll', onScroll);
+    });
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      if (bound) bound.off('scroll', onScroll);
+      off();
+    };
   }, [apply]);
 
   // also re-evaluate on a low-frequency tick: while the auto-scroll HOLDS for a
