@@ -17,46 +17,22 @@ export function useSmoothScroll(): void {
     const prefersReduced = window.matchMedia(
       '(prefers-reduced-motion: reduce)'
     ).matches;
-    // Touch devices (phones / tablets): skip Lenis entirely. Its per-frame work
-    // on top of the scrubbed ScrollTriggers is the main cause of mobile jank;
-    // native scrolling is far smoother there and ScrollTrigger works fine on it.
-    const isTouch = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
 
-    if (prefersReduced || isTouch) {
-      // Native scroll — no Lenis. Drive ScrollTrigger from the native scroll
-      // event (Lenis used to do this) so the scrubbed animations still advance.
+    if (prefersReduced) {
+      // Skip smooth scroll entirely — ScrollTrigger still works on native scroll.
       const onScroll = () => ScrollTrigger.update();
       window.addEventListener('scroll', onScroll, { passive: true });
-      if (process.env.NODE_ENV !== 'production') {
-        (window as unknown as Record<string, unknown>).__ST = ScrollTrigger;
-      }
       ScrollTrigger.refresh();
-      const refresh = () => ScrollTrigger.refresh();
-      // Only refresh on a real size change (orientation) — NOT the height-only
-      // resize the mobile URL bar fires on every scroll, which would reset the
-      // pinned sections and make the first one look like it "repeats".
-      let lastW = window.innerWidth;
-      const onResize = () => {
-        if (window.innerWidth !== lastW) {
-          lastW = window.innerWidth;
-          refresh();
-        }
-      };
-      window.addEventListener('load', refresh);
-      window.addEventListener('resize', onResize);
-      const settle = window.setTimeout(refresh, 600);
-      return () => {
-        window.removeEventListener('scroll', onScroll);
-        window.removeEventListener('load', refresh);
-        window.removeEventListener('resize', onResize);
-        window.clearTimeout(settle);
-      };
+      return () => window.removeEventListener('scroll', onScroll);
     }
 
+    // Lenis on ALL devices (incl. touch, via syncTouch) so the scrubbed text
+    // stays tightly connected to the scroll — the same feel as desktop.
     const lenis = new Lenis({
       duration: 1.15,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
+      syncTouch: true,
       touchMultiplier: 1.4,
     });
 
@@ -88,7 +64,7 @@ export function useSmoothScroll(): void {
     // leave the pinned/sticky sections misaligned. Debounced so it runs once the
     // new layout has settled; it only recomputes positions (safe, non-visual).
     let rt = 0;
-    const onResize = () => {
+    const doRefresh = () => {
       window.clearTimeout(rt);
       rt = window.setTimeout(() => {
         // preserve HOW FAR through the page we are across the refresh, so
@@ -102,8 +78,17 @@ export function useSmoothScroll(): void {
         lenis.scrollTo(frac * maxAfter, { immediate: true, force: true });
       }, 160);
     };
+    // Only refresh on a real WIDTH change (orientation / window resize / F11) —
+    // NOT the height-only resize the mobile URL bar fires on every scroll, which
+    // would reset the pinned sections and make the first one "repeat".
+    let lastW = window.innerWidth;
+    const onResize = () => {
+      if (window.innerWidth === lastW) return;
+      lastW = window.innerWidth;
+      doRefresh();
+    };
     window.addEventListener('resize', onResize);
-    document.addEventListener('fullscreenchange', onResize);
+    document.addEventListener('fullscreenchange', doRefresh);
 
     return () => {
       gsap.ticker.remove(raf);
@@ -113,7 +98,7 @@ export function useSmoothScroll(): void {
       window.clearTimeout(settle);
       window.clearTimeout(rt);
       window.removeEventListener('resize', onResize);
-      document.removeEventListener('fullscreenchange', onResize);
+      document.removeEventListener('fullscreenchange', doRefresh);
     };
   }, []);
 }
