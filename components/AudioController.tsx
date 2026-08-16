@@ -84,6 +84,7 @@ export default function AudioController() {
   const ambientRef = useRef<HTMLAudioElement | null>(null);
   const ambientVolRef = useRef(AMBIENT_VOL); // lower on mobile
   const declVideoVolRef = useRef(DECL_VIDEO_VOL); // device-specific video level
+  const declGainRef = useRef<GainNode | null>(null); // iOS-safe video volume
   const sfxRef = useRef<Map<string, HTMLAudioElement>>(new Map());
   const enabledRef = useRef(false);
   const masterRef = useRef(0.8);
@@ -320,7 +321,27 @@ export default function AudioController() {
             /* ignore */
           }
           declVideo.muted = false;
-          declVideo.volume = clamp(master * declVideoVolRef.current);
+          // Route the video's audio through a Web Audio gain the first time, so
+          // its volume is actually controllable on iOS (where video.volume is
+          // ignored). element.volume stays 1; the gain sets the real level.
+          const ctx = narrCtxRef.current;
+          if (ctx && !declGainRef.current) {
+            try {
+              const src = ctx.createMediaElementSource(declVideo);
+              const g = ctx.createGain();
+              src.connect(g);
+              g.connect(ctx.destination);
+              declGainRef.current = g;
+            } catch {
+              /* already routed / unavailable */
+            }
+          }
+          if (declGainRef.current) {
+            declVideo.volume = 1;
+            declGainRef.current.gain.value = clamp(master * declVideoVolRef.current);
+          } else {
+            declVideo.volume = clamp(master * declVideoVolRef.current);
+          }
           declVideo.play().catch(() => {});
         } else if (!inRange && declFiredRef.current) {
           declFiredRef.current = false;
@@ -482,7 +503,10 @@ export default function AudioController() {
       narrElRef.current.volume = clamp(v); // Web Audio gain applies the boost
     }
     const dv = getDeclVideo();
-    if (dv && !dv.paused) dv.volume = clamp(v * declVideoVolRef.current);
+    if (dv && !dv.paused) {
+      if (declGainRef.current) declGainRef.current.gain.value = clamp(v * declVideoVolRef.current);
+      else dv.volume = clamp(v * declVideoVolRef.current);
+    }
   }, []);
 
   // restore on/off preference (needs a user gesture to actually start audio)
