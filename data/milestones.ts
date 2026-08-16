@@ -13,6 +13,9 @@ export interface Milestone {
   image: string;
   symbol: MilestoneSymbol;
   background: string;
+  // true = show the image small & whole (no zoom/crop) — for documents/paintings;
+  // false/undefined = full-bleed cinematic background
+  contain?: boolean;
 }
 
 export const MILESTONES: Record<string, Milestone> = {
@@ -27,6 +30,7 @@ export const MILESTONES: Record<string, Milestone> = {
     image: '/images/photos/m1919.webp',
     symbol: 'letter',
     background: 'linear-gradient(180deg, #080808 0%, #1a140c 50%, #080808 100%)',
+    contain: true, // a document — show it whole, not zoomed
   },
   y1920: {
     id: 'chapter-1920',
@@ -51,6 +55,7 @@ export const MILESTONES: Record<string, Milestone> = {
     image: '/images/photos/m1930.webp',
     symbol: 'sickle',
     background: 'radial-gradient(ellipse at center, #2a0f0d 0%, #080808 72%)',
+    contain: true, // a painting with many figures — show it whole, not cropped
   },
   y1954: {
     id: 'chapter-1954',
