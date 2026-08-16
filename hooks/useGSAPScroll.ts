@@ -17,22 +17,46 @@ export function useSmoothScroll(): void {
     const prefersReduced = window.matchMedia(
       '(prefers-reduced-motion: reduce)'
     ).matches;
+    // Touch devices (phones/tablets): skip Lenis. Its per-frame smoothing on top
+    // of the scrubbed ScrollTriggers overloads phones (freezing + audio stutter);
+    // native scrolling is stable there and ScrollTrigger works fine on it.
+    const isTouch = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
 
-    if (prefersReduced) {
-      // Skip smooth scroll entirely — ScrollTrigger still works on native scroll.
+    if (prefersReduced || isTouch) {
+      // Native scroll — no Lenis. Drive ScrollTrigger from the native scroll
+      // event so the scrubbed animations still advance.
       const onScroll = () => ScrollTrigger.update();
       window.addEventListener('scroll', onScroll, { passive: true });
+      if (process.env.NODE_ENV !== 'production') {
+        (window as unknown as Record<string, unknown>).__ST = ScrollTrigger;
+      }
       ScrollTrigger.refresh();
-      return () => window.removeEventListener('scroll', onScroll);
+      const refresh = () => ScrollTrigger.refresh();
+      // Only refresh on a real WIDTH change (orientation) — NOT the height-only
+      // resize the mobile URL bar fires on every scroll (that would "repeat" the
+      // first section).
+      let lastW = window.innerWidth;
+      const onResize = () => {
+        if (window.innerWidth !== lastW) {
+          lastW = window.innerWidth;
+          refresh();
+        }
+      };
+      window.addEventListener('load', refresh);
+      window.addEventListener('resize', onResize);
+      const settle = window.setTimeout(refresh, 600);
+      return () => {
+        window.removeEventListener('scroll', onScroll);
+        window.removeEventListener('load', refresh);
+        window.removeEventListener('resize', onResize);
+        window.clearTimeout(settle);
+      };
     }
 
-    // Lenis on ALL devices (incl. touch, via syncTouch) so the scrubbed text
-    // stays tightly connected to the scroll — the same feel as desktop.
     const lenis = new Lenis({
       duration: 1.15,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
-      syncTouch: true,
       touchMultiplier: 1.4,
     });
 
