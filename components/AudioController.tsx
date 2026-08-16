@@ -95,6 +95,7 @@ export default function AudioController() {
   const narrEndRef = useRef(0);
   const narrElRef = useRef<HTMLAudioElement | null>(null);
   const narrCtxRef = useRef<AudioContext | null>(null);
+  const narrMakeupRef = useRef<GainNode | null>(null); // output gain of the voice bus
   const narrWatchRef = useRef<number | null>(null);
   const declFiredRef = useRef(false); // Tuyên ngôn one-shot: fire once per visit
   const narrFadingRef = useRef(false); // narration is fading out its tail
@@ -145,6 +146,7 @@ export default function AudioController() {
         makeup.gain.value = VOICE_MAKEUP;
         comp.connect(makeup);
         makeup.connect(ctx.destination);
+        narrMakeupRef.current = makeup;
         nm.forEach((a) => {
           const src = ctx.createMediaElementSource(a);
           const g = ctx.createGain();
@@ -376,6 +378,10 @@ export default function AudioController() {
     // play it programmatically later. Without this, mobile silently blocks the
     // 2nd narration file (part-2) since it was never played within a gesture —
     // which drops all narration from "30 NĂM"/1930 onward.
+    // narration runs through Web Audio, where element.muted does NOT silence it,
+    // so zero the whole voice bus for the duration of the unlock (restore after).
+    const makeup = narrMakeupRef.current;
+    if (makeup) makeup.gain.value = 0;
     const unlock = (el: HTMLMediaElement) => {
       try {
         el.muted = true;
@@ -400,6 +406,9 @@ export default function AudioController() {
     sfxRef.current.forEach(unlock);
     const dv = getDeclVideo();
     if (dv) unlock(dv);
+    window.setTimeout(() => {
+      if (narrMakeupRef.current) narrMakeupRef.current.gain.value = VOICE_MAKEUP;
+    }, 400);
     ambTargetRef.current = -1; // force ambient re-fade
     apply();
   }, [apply]);
@@ -515,17 +524,22 @@ export default function AudioController() {
       });
     };
     window.addEventListener('scroll', onScroll, { passive: true });
-    // Lenis (desktop) doesn't fire native scroll during smooth / auto-scroll —
-    // also listen to its own scroll event so audio starts + follows there too.
+    // Lenis (desktop) doesn't fire native scroll during smooth / auto-scroll, so
+    // its scroll event only ARMS playback here — apply() still runs on the 200ms
+    // tick, NOT every frame (running the heavy apply() at 60fps made auto-scroll
+    // janky).
+    const onLenisScroll = () => {
+      if (enabledRef.current) startedRef.current = true;
+    };
     let bound: Lenis | null = null;
     const off = onLenis((l) => {
-      if (bound) bound.off('scroll', onScroll);
+      if (bound) bound.off('scroll', onLenisScroll);
       bound = l;
-      if (l) l.on('scroll', onScroll);
+      if (l) l.on('scroll', onLenisScroll);
     });
     return () => {
       window.removeEventListener('scroll', onScroll);
-      if (bound) bound.off('scroll', onScroll);
+      if (bound) bound.off('scroll', onLenisScroll);
       off();
     };
   }, [apply]);
