@@ -136,6 +136,20 @@ export default function AutoScrollButton() {
     else play();
   }, [pause, play]);
 
+  // Browsers freeze requestAnimationFrame while the tab is hidden, so the loop
+  // stalls when you switch away. Restart it cleanly when the tab comes back.
+  useEffect(() => {
+    const onVis = () => {
+      if (!document.hidden && playingRef.current) {
+        if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+        lastTs.current = 0;
+        rafRef.current = requestAnimationFrame(step);
+      }
+    };
+    document.addEventListener('visibilitychange', onVis);
+    return () => document.removeEventListener('visibilitychange', onVis);
+  }, [step]);
+
   // --- track scroll progress + auto-stop on user interaction ------------
   useEffect(() => {
     let ticking = false;

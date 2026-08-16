@@ -30,9 +30,13 @@ export function initUiSound() {
       window.AudioContext ||
       (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (AC) {
+      // phone speakers distort a boosted low tone — use a gentler gain on touch
+      const isTouch =
+        typeof matchMedia !== 'undefined' &&
+        matchMedia('(hover: none) and (pointer: coarse)').matches;
       ctx = new AC();
       gain = ctx.createGain();
-      gain.gain.value = BOOST;
+      gain.gain.value = isTouch ? 1.2 : BOOST;
       const limiter = ctx.createDynamicsCompressor();
       limiter.threshold.value = -6;
       limiter.knee.value = 6;

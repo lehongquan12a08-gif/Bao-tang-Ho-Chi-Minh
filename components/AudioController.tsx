@@ -96,6 +96,7 @@ export default function AudioController() {
   const narrElRef = useRef<HTMLAudioElement | null>(null);
   const narrCtxRef = useRef<AudioContext | null>(null);
   const narrMakeupRef = useRef<GainNode | null>(null); // output gain of the voice bus
+  const voiceMakeupRef = useRef(VOICE_MAKEUP); // makeup target (lower on mobile)
   const narrWatchRef = useRef<number | null>(null);
   const declFiredRef = useRef(false); // Tuyên ngôn one-shot: fire once per visit
   const narrFadingRef = useRef(false); // narration is fading out its tail
@@ -137,20 +138,26 @@ export default function AudioController() {
         window.AudioContext ||
         (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
       if (AC) {
+        // Phone speakers/DACs clip the heavily-boosted+compressed voice, which
+        // sounds like "rè" (distortion). Use a much gentler lift on touch.
+        const isTouch = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+        const narrBoost = isTouch ? 1.5 : NARR_BOOST;
+        const makeupGain = isTouch ? 1.0 : VOICE_MAKEUP;
+        voiceMakeupRef.current = makeupGain;
         const ctx = new AC();
         narrCtxRef.current = ctx;
         // compressor tames peaks so the boost doesn't distort, then a makeup
-        // gain lifts the overall (louder) level
+        // gain lifts the overall level
         const comp = ctx.createDynamicsCompressor();
         const makeup = ctx.createGain();
-        makeup.gain.value = VOICE_MAKEUP;
+        makeup.gain.value = makeupGain;
         comp.connect(makeup);
         makeup.connect(ctx.destination);
         narrMakeupRef.current = makeup;
         nm.forEach((a) => {
           const src = ctx.createMediaElementSource(a);
           const g = ctx.createGain();
-          g.gain.value = NARR_BOOST;
+          g.gain.value = narrBoost;
           src.connect(g);
           g.connect(comp);
         });
@@ -407,7 +414,7 @@ export default function AudioController() {
     const dv = getDeclVideo();
     if (dv) unlock(dv);
     window.setTimeout(() => {
-      if (narrMakeupRef.current) narrMakeupRef.current.gain.value = VOICE_MAKEUP;
+      if (narrMakeupRef.current) narrMakeupRef.current.gain.value = voiceMakeupRef.current;
     }, 400);
     ambTargetRef.current = -1; // force ambient re-fade
     apply();
