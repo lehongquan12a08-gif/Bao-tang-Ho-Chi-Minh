@@ -269,3 +269,21 @@ html.lenis body {
 .will-transform {
   will-change: transform, opacity;
 }
+
+/* ------------------------------------------------------------------ */
+/*  Mobile / touch: drop the GPU-heavy decorative layers               */
+/*  Full-screen animated/blended overlays (film grain, texture washes) */
+/*  choke mobile GPUs and can crash the tab. They're subtle atmosphere */
+/*  — removing them on phones keeps the site stable; desktop keeps them.*/
+/* ------------------------------------------------------------------ */
+@media (hover: none) and (pointer: coarse) {
+  .film-grain,
+  .film-vignette,
+  .texture-bg {
+    display: none !important;
+  }
+  .mix-blend-overlay {
+    mix-blend-mode: normal !important;
+    opacity: 0 !important; /* the wash divs are only meaningful when blended */
+  }
+}

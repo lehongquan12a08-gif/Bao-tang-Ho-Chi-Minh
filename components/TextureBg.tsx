@@ -18,7 +18,9 @@ export default function TextureBg({ src, className = '', style }: TextureBgProps
       src={src}
       alt=""
       aria-hidden="true"
-      className={`pointer-events-none absolute inset-0 h-full w-full object-cover ${className}`}
+      loading="lazy"
+      decoding="async"
+      className={`texture-bg pointer-events-none absolute inset-0 h-full w-full object-cover ${className}`}
       style={style}
     />
   );

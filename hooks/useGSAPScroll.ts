@@ -83,8 +83,15 @@ export function useSmoothScroll(): void {
     const onResize = () => {
       window.clearTimeout(rt);
       rt = window.setTimeout(() => {
+        // preserve HOW FAR through the page we are across the refresh, so
+        // entering/leaving F11 (which changes the total scrollable height)
+        // keeps the same story point instead of jumping.
+        const maxBefore = document.documentElement.scrollHeight - window.innerHeight;
+        const frac = maxBefore > 0 ? window.scrollY / maxBefore : 0;
         lenis.resize();
         ScrollTrigger.refresh();
+        const maxAfter = document.documentElement.scrollHeight - window.innerHeight;
+        lenis.scrollTo(frac * maxAfter, { immediate: true, force: true });
       }, 160);
     };
     window.addEventListener('resize', onResize);
