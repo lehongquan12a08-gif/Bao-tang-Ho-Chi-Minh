@@ -93,6 +93,9 @@ export default function AudioController() {
   const narrWatchRef = useRef<number | null>(null);
   const declFiredRef = useRef(false); // Tuyên ngôn one-shot: fire once per visit
   const narrFadingRef = useRef(false); // narration is fading out its tail
+  // enabling the speaker only ARMS audio; nothing plays until the first scroll
+  // / auto-scroll, so tapping the speaker doesn't blast sound on the spot.
+  const startedRef = useRef(false);
 
   // create audio elements once
   useEffect(() => {
@@ -198,7 +201,7 @@ export default function AudioController() {
 
   // update which ambience plays, honouring scroll `range` + master volume + duck
   const apply = useCallback(() => {
-    if (!enabledRef.current) return;
+    if (!enabledRef.current || !startedRef.current) return;
     const master = masterRef.current;
     const mid = window.innerHeight / 2;
 
@@ -380,6 +383,7 @@ export default function AudioController() {
     narrActiveRef.current = null;
     narrElRef.current = null;
     declFiredRef.current = false;
+    startedRef.current = false; // re-arm: next enable won't auto-play either
     getDeclVideo()?.pause();
     stopNarrWatch();
     narrationState.speaking = false;
@@ -466,6 +470,8 @@ export default function AudioController() {
   useEffect(() => {
     let ticking = false;
     const onScroll = () => {
+      // the first scroll (manual or auto-scroll) is what actually starts sound
+      if (enabledRef.current) startedRef.current = true;
       if (ticking) return;
       ticking = true;
       requestAnimationFrame(() => {
