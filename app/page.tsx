@@ -77,13 +77,6 @@ export default function Home() {
         {/* 09 · Việt Nam */}
         <VietnamMapSection />
 
-        {/* Closing typography */}
-        <WordCascade
-          id="chapter-vi-dan"
-          words={['MỘT CUỘC ĐỜI', 'VÌ DÂN', 'VÌ NƯỚC']}
-          perWordVh={85}
-        />
-
         {/* 10 · The circle closes */}
         <FinalSection />
 

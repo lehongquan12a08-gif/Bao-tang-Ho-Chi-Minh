@@ -4,18 +4,20 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { NARRATION, NARRATION_FILES, type NarrationCue } from '@/data/narration';
 import { narrationState } from '@/lib/narrationState';
 import { initUiSound } from '@/lib/uiSound';
+import { getDeclVideo } from '@/lib/declVideo';
 
 // The voice recordings are a bit quiet, so lift them with a Web Audio gain
 // (can exceed 1.0, unlike element.volume). Master slider still scales it.
 const NARR_BOOST = 2.8;
 // makeup gain after the compressor — lifts the overall voice level
 const VOICE_MAKEUP = 1.5;
-// the Tuyên ngôn recording is also a voice — lift it close to the narration
-const DECL_SRC = '/audio/sfx/declaration-1945.mp3';
-const DECL_BOOST = 0.35;
-// the section fraction band the Tuyên ngôn recording scrubs — the Ba Đình photo
-// act, held on screen while Bác reads. It only fires AFTER the 1945 narration
-// has finished (its scroll band ends at 0.46), so the two voices never overlap.
+// Tuyên ngôn Độc lập — now a VIDEO (Bác reads) living in the 1945 chapter.
+// It fires when the Ba Đình scene enters DECL_RANGE (after the 1945 narration
+// has finished), plays with its own audio, and the auto-scroll holds on it.
+const DECL_RANGE: [number, number] = [0.4, 0.72]; // scene scroll fraction that triggers it
+const DECL_VIDEO_VOL = 0.85; // video audio level (× master)
+// the section fraction band the video scrubs — the Ba Đình act, held on screen
+// while Bác reads (kept just inside DECL_RANGE)
 const DECL_SCROLL: [number, number] = [0.44, 0.63];
 // how much the supporting sounds (music + waves/wind/crowd) drop while a voice
 // (narration or the Tuyên ngôn recording) is speaking
@@ -42,9 +44,7 @@ const SFX: Sfx[] = [
   { id: 'chapter-1911', src: `/audio/sfx/ship-1911.wav?${V}`, vol: 0.16 },
   { id: 'chapter-1941', src: `/audio/sfx/mountain-1941.wav?${V}`, vol: 0.14 },
   { id: 'chapter-1945', src: `/audio/sfx/crowd-1945.wav?${V}`, vol: 0.09 },
-  // Bác đọc Tuyên ngôn — a voice clip, fires on the Ba Đình scene AFTER the
-  // 1945 narration has finished (narration band ends at 0.46).
-  { id: 'chapter-1945', src: DECL_SRC, vol: 1.0, loop: false, voice: true, range: [0.4, 0.72] },
+  // (Tuyên ngôn is now a <video> handled separately — see DECL_RANGE)
 ];
 
 const LS_KEY = 'httcb-audio';
@@ -144,15 +144,6 @@ export default function AudioController() {
           src.connect(g);
           g.connect(comp);
         });
-        // route the Tuyên ngôn recording through the same boost (a bit lower)
-        const decl = m.get(DECL_SRC);
-        if (decl) {
-          const dsrc = ctx.createMediaElementSource(decl);
-          const dg = ctx.createGain();
-          dg.gain.value = DECL_BOOST;
-          dsrc.connect(dg);
-          dg.connect(comp);
-        }
       }
     } catch {
       /* Web Audio unavailable → narration plays at element volume */
@@ -266,32 +257,51 @@ export default function AudioController() {
       stopNarrWatch();
     }
 
-    // 2) which SFX are active? (and is a voice clip among them?) -----------
+    // 2) which supporting SFX are active? ----------------------------------
     const activeMap = new Map<string, boolean>();
-    let declActive = false;
     for (const s of SFX) {
       const el = document.getElementById(s.id);
       let active = false;
       if (el) {
-        if (s.range) {
-          const scrollable = el.offsetHeight - window.innerHeight;
-          const scrolled = -el.getBoundingClientRect().top;
-          const p = scrollable > 0 ? scrolled / scrollable : 0;
-          active = p >= s.range[0] && p <= s.range[1];
-        } else {
-          const r = el.getBoundingClientRect();
-          active = r.top <= mid && r.bottom >= mid;
-        }
+        const r = el.getBoundingClientRect();
+        active = r.top <= mid && r.bottom >= mid;
       }
       activeMap.set(s.src, active);
-      // a voice clip only keeps the "voice" flag until it has finished playing —
-      // otherwise it would hold the auto-scroll forever after the clip ends
-      if (active && s.voice) {
-        const de = sfxRef.current.get(s.src);
-        if (!de || !de.ended) declActive = true;
+    }
+
+    // 2b) Tuyên ngôn VIDEO — Bác reads on the Ba Đình scene ----------------
+    const declVideo = getDeclVideo();
+    let declActive = false;
+    {
+      const el = document.getElementById('chapter-1945');
+      let inRange = false;
+      if (el) {
+        const scrollable = el.offsetHeight - window.innerHeight;
+        const scrolled = -el.getBoundingClientRect().top;
+        const p = scrollable > 0 ? scrolled / scrollable : 0;
+        inRange = p >= DECL_RANGE[0] && p <= DECL_RANGE[1];
+      }
+      if (declVideo) {
+        if (inRange && !declFiredRef.current) {
+          // fire once on entering the scene (don't restart while still in range)
+          declFiredRef.current = true;
+          try {
+            declVideo.currentTime = 0;
+          } catch {
+            /* ignore */
+          }
+          declVideo.muted = false;
+          declVideo.volume = clamp(master * DECL_VIDEO_VOL);
+          declVideo.play().catch(() => {});
+        } else if (!inRange && declFiredRef.current) {
+          declFiredRef.current = false;
+          declVideo.pause();
+        }
+        declActive = inRange && declFiredRef.current && !declVideo.ended;
       }
     }
-    // don't stack two voices: the Tuyên ngôn recording takes over from narration
+
+    // don't stack two voices: the video takes over from the narration
     if (declActive && narrElRef.current && !narrElRef.current.paused) {
       narrElRef.current.pause();
       stopNarrWatch();
@@ -303,16 +313,15 @@ export default function AudioController() {
     const narrDriving = narrAudible && !narrFadingRef.current;
     const voice = declActive || narrAudible;
     narrationState.speaking = voice; // any audible voice
-    if (declActive) {
-      // the Tuyên ngôn recording takes over as the scrubbing voice: hold on the
-      // Ba Đình photo (DECL_SCROLL) and glide across it as Bác reads
-      const de = sfxRef.current.get(DECL_SRC);
-      const d = de && isFinite(de.duration) ? de.duration : 0;
+    if (declActive && declVideo) {
+      // the video drives the scrub: hold on the Ba Đình scene (DECL_SCROLL) and
+      // glide across it as Bác reads
+      const d = isFinite(declVideo.duration) ? declVideo.duration : 0;
       narrationState.activeId = 'chapter-1945';
       narrationState.scroll0 = DECL_SCROLL[0];
       narrationState.scroll1 = DECL_SCROLL[1];
-      narrationState.progress = de && d > 0 ? clamp(de.currentTime / d) : 0;
-      narrationState.playing = !!(de && !de.paused && !de.ended);
+      narrationState.progress = d > 0 ? clamp(declVideo.currentTime / d) : 0;
+      narrationState.playing = !declVideo.paused && !declVideo.ended;
     } else {
       narrationState.playing = narrDriving; // only a live (non-fading) narration
     }
@@ -322,23 +331,8 @@ export default function AudioController() {
       const a = sfxRef.current.get(s.src);
       if (!a) continue;
       if (activeMap.get(s.src)) {
-        if (s.voice) {
-          // fire once on entering range; don't restart while still in range
-          // (even after it ends) — that would trap the auto-scroll on a loop
-          if (!declFiredRef.current) {
-            declFiredRef.current = true;
-            try {
-              a.currentTime = 0;
-            } catch {
-              /* ignore */
-            }
-            fadeTo(a, s.vol * master, 300);
-          }
-        } else {
-          fadeTo(a, s.vol * master * (voice ? SFX_DUCK : 1), 700);
-        }
+        fadeTo(a, s.vol * master * (voice ? SFX_DUCK : 1), 700);
       } else {
-        if (s.voice) declFiredRef.current = false; // re-arm for next visit
         fadeTo(a, 0, 900);
       }
     }
@@ -383,6 +377,7 @@ export default function AudioController() {
     narrActiveRef.current = null;
     narrElRef.current = null;
     declFiredRef.current = false;
+    getDeclVideo()?.pause();
     stopNarrWatch();
     narrationState.speaking = false;
     narrationState.playing = false;
@@ -417,6 +412,8 @@ export default function AudioController() {
     if (narrElRef.current && !narrElRef.current.paused) {
       narrElRef.current.volume = clamp(v); // Web Audio gain applies the boost
     }
+    const dv = getDeclVideo();
+    if (dv && !dv.paused) dv.volume = clamp(v * DECL_VIDEO_VOL);
   }, []);
 
   // restore on/off preference (needs a user gesture to actually start audio)
@@ -494,8 +491,8 @@ export default function AudioController() {
     const id = window.setInterval(() => {
       const el = narrElRef.current;
       const t = el ? el.currentTime : 0;
-      const decl = sfxRef.current.get(DECL_SRC);
-      const dline = decl && !decl.paused ? ` · Bác đọc ${decl.currentTime.toFixed(1)}s` : '';
+      const decl = getDeclVideo();
+      const dline = decl && !decl.paused ? ` · video ${decl.currentTime.toFixed(1)}s` : '';
       setTune(
         `${narrActiveRef.current ?? '—'} · ${t.toFixed(1)}s · p${narrationState.progress.toFixed(2)}${dline}`
       );
@@ -514,6 +511,7 @@ export default function AudioController() {
         narrActiveRef.current = null; // replay current chapter's line on return
         narrElRef.current = null;
         declFiredRef.current = false;
+        getDeclVideo()?.pause();
         narrationState.speaking = false;
         narrationState.playing = false;
         narrationState.activeId = null;

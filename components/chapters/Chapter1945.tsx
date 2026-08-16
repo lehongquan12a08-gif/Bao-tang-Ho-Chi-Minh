@@ -5,6 +5,7 @@ import { gsap, useGSAP } from '@/lib/gsap';
 import GoldStar from '@/components/objects/GoldStar';
 import TextureBg from '@/components/TextureBg';
 import { playChime } from '@/lib/uiSound';
+import { setDeclVideo } from '@/lib/declVideo';
 
 /**
  * 1945 — three cleanly separated acts (no black gaps, nothing overlaps):
@@ -96,10 +97,16 @@ export default function Chapter1945() {
               GSAP), inner .s-decl is animated so centring never gets overridden */}
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
             <div className="s-decl will-transform">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/images/photos/declaration-1945.webp"
-                alt="Chủ tịch Hồ Chí Minh đọc Tuyên ngôn Độc lập, khai sinh nước Việt Nam Dân chủ Cộng hòa"
+              {/* Bác đọc Tuyên ngôn — video tư liệu (AudioController tự phát khi
+                  cuộn tới cảnh Ba Đình); poster là ảnh tĩnh nên trước khi phát
+                  vẫn thấy khung hình quen thuộc */}
+              <video
+                ref={setDeclVideo}
+                src="/video/tuyen-ngon-1945.mp4"
+                poster="/images/photos/declaration-1945.webp"
+                playsInline
+                preload="auto"
+                controls
                 className="h-auto max-h-[62vh] w-auto max-w-[52vw] object-contain"
                 style={{ boxShadow: '0 30px 80px rgba(0,0,0,0.75)' }}
               />
