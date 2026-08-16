@@ -15,7 +15,7 @@ const VOICE_MAKEUP = 1.5;
 // It fires when the Ba Đình scene enters DECL_RANGE (after the 1945 narration
 // has finished), plays with its own audio, and the auto-scroll holds on it.
 const DECL_RANGE: [number, number] = [0.42, 0.98]; // scene scroll fraction that triggers it
-const DECL_VIDEO_VOL = 0.5; // video audio level (× master)
+const DECL_VIDEO_VOL = 0.35; // video audio level (× master)
 // the section fraction band the video scrubs — the Ba Đình act, held on screen
 // while Bác reads (kept just inside DECL_RANGE)
 const DECL_SCROLL: [number, number] = [0.44, 0.92];
