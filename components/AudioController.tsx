@@ -14,11 +14,11 @@ const VOICE_MAKEUP = 1.5;
 // Tuyên ngôn Độc lập — now a VIDEO (Bác reads) living in the 1945 chapter.
 // It fires when the Ba Đình scene enters DECL_RANGE (after the 1945 narration
 // has finished), plays with its own audio, and the auto-scroll holds on it.
-const DECL_RANGE: [number, number] = [0.4, 0.72]; // scene scroll fraction that triggers it
-const DECL_VIDEO_VOL = 0.85; // video audio level (× master)
+const DECL_RANGE: [number, number] = [0.42, 0.98]; // scene scroll fraction that triggers it
+const DECL_VIDEO_VOL = 0.5; // video audio level (× master)
 // the section fraction band the video scrubs — the Ba Đình act, held on screen
 // while Bác reads (kept just inside DECL_RANGE)
-const DECL_SCROLL: [number, number] = [0.44, 0.63];
+const DECL_SCROLL: [number, number] = [0.44, 0.92];
 // how much the supporting sounds (music + waves/wind/crowd) drop while a voice
 // (narration or the Tuyên ngôn recording) is speaking
 const AMBIENT_DUCK = 0.18;

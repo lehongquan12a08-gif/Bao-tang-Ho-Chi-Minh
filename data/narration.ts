@@ -38,7 +38,9 @@ export const NARRATION: NarrationCue[] = [
   { id: 'chapter-1945', part: 2, start: 60, end: 74, scroll: [0, 0.3] },
   { id: 'chapter-1954', part: 2, start: 83, end: 98 },
   { id: 'map', part: 2, start: 98, end: 116 },
-  // lời khép lại đọc trọn trên ảnh chân dung Bác (final)
-  { id: 'final', part: 2, start: 116, end: 153 },
-  // Tư liệu (gallery), Nghe & Xem (media), footer — để im, người xem tự xem
+  // lời khép lại: mở trên ảnh chân dung Bác (final) rồi TIẾP TỤC đọc trong khi
+  // lướt qua trọn phần Tư liệu (gallery) — hình và tiếng cùng khép lại
+  { id: 'final', part: 2, start: 116, end: 130 },
+  { id: 'gallery', part: 2, start: 130, end: 153 },
+  // Nghe & Xem (media), footer — để im, người xem tự xem
 ];
