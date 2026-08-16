@@ -39,8 +39,11 @@ export default function Chapter1945() {
       // ---- Act B : the Ba Đình scene + video (held to the end) -----------
       tl.fromTo(q('.scene'), { opacity: 0 }, { opacity: 1, duration: 0.05 }, 0.38)
         .fromTo(q('.s-decl'), { opacity: 0, y: 24, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: 0.05 }, 0.4)
-        .fromTo(q('.badinh-label'), { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.04 }, 0.42);
-      // the scene stays on screen for the rest of the section
+        .fromTo(q('.badinh-label'), { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.04 }, 0.42)
+        // keep the scene on to the end AND pad the timeline out to length ~1 so
+        // the tween positions above line up 1:1 with the section's scroll % (and
+        // therefore with the video's DECL_RANGE / DECL_SCROLL in AudioController)
+        .to(q('.scene'), { opacity: 1, duration: 0.02 }, 0.99);
     },
     { scope: root }
   );
