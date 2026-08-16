@@ -15,6 +15,7 @@ let idx = 0;
 let last = 0;
 let ctx: AudioContext | null = null;
 let gain: GainNode | null = null;
+let touch = false; // phones distort the deep tone — play it higher & softer
 
 // Re-wake the chime context if the OS suspended it (mobile does this a lot).
 export function resumeUiSound() {
@@ -31,12 +32,12 @@ export function initUiSound() {
       (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (AC) {
       // phone speakers distort a boosted low tone — use a gentler gain on touch
-      const isTouch =
+      touch =
         typeof matchMedia !== 'undefined' &&
         matchMedia('(hover: none) and (pointer: coarse)').matches;
       ctx = new AC();
       gain = ctx.createGain();
-      gain.gain.value = isTouch ? 1.2 : BOOST;
+      gain.gain.value = touch ? 0.9 : BOOST;
       const limiter = ctx.createDynamicsCompressor();
       limiter.threshold.value = -6;
       limiter.knee.value = 6;
@@ -77,8 +78,11 @@ export function playChime(seq = 0, base = 0.7) {
   if (!a) return;
   const master = narrationState.volume;
   const duck = narrationState.speaking ? 0.4 : 1; // stay under the voice
-  a.playbackRate = RATES[((seq % RATES.length) + RATES.length) % RATES.length];
-  a.volume = Math.max(0, Math.min(1, base * master * duck));
+  const rate = RATES[((seq % RATES.length) + RATES.length) % RATES.length];
+  // on phones shift the tone ~an octave up into the mid range (small speakers
+  // reproduce it cleanly — the deep tone was distorting) and play it softer
+  a.playbackRate = touch ? rate * 1.9 : rate;
+  a.volume = Math.max(0, Math.min(1, (touch ? base * 0.7 : base) * master * duck));
   try {
     a.currentTime = 0;
   } catch {

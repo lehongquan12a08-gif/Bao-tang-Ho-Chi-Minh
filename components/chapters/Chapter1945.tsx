@@ -71,7 +71,7 @@ export default function Chapter1945() {
           />
           <div className="pointer-events-none absolute inset-0 bg-vn-black/55" />
 
-          <p className="badinh-label will-transform pointer-events-none absolute left-1/2 top-[9%] -translate-x-1/2 whitespace-nowrap font-display text-2xl uppercase tracking-[0.3em] text-vn-ivory md:text-4xl">
+          <p className="badinh-label will-transform pointer-events-none absolute left-1/2 top-[7%] w-[92%] max-w-2xl -translate-x-1/2 text-center font-display text-xl uppercase leading-tight tracking-[0.16em] text-vn-ivory sm:text-2xl sm:tracking-[0.24em] md:text-4xl md:tracking-[0.3em]">
             Quảng trường Ba Đình
           </p>
 

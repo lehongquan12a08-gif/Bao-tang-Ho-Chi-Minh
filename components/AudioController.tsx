@@ -17,7 +17,7 @@ const VOICE_MAKEUP = 1.5;
 // It fires when the Ba Đình scene enters DECL_RANGE (after the 1945 narration
 // has finished), plays with its own audio, and the auto-scroll holds on it.
 const DECL_RANGE: [number, number] = [0.42, 0.98]; // scene scroll fraction that triggers it
-const DECL_VIDEO_VOL = 0.35; // video audio level (× master)
+const DECL_VIDEO_VOL = 0.09; // video audio level (× master)
 // the section fraction band the video scrubs — the Ba Đình act, held on screen
 // while Bác reads (kept just inside DECL_RANGE)
 const DECL_SCROLL: [number, number] = [0.44, 0.92];
@@ -82,6 +82,7 @@ export default function AudioController() {
   const [tune, setTune] = useState<string | null>(null); // #tune debug readout
 
   const ambientRef = useRef<HTMLAudioElement | null>(null);
+  const ambientVolRef = useRef(AMBIENT_VOL); // lower on mobile
   const sfxRef = useRef<Map<string, HTMLAudioElement>>(new Map());
   const enabledRef = useRef(false);
   const masterRef = useRef(0.8);
@@ -117,6 +118,7 @@ export default function AudioController() {
     // narration — "tiếng sông" too loud. Skip them entirely on touch: keep just
     // the narration + ambient music + the Tuyên ngôn video.
     const isTouch = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+    ambientVolRef.current = isTouch ? 0.1 : AMBIENT_VOL; // quieter music on phones
     const m = new Map<string, HTMLAudioElement>();
     if (!isTouch) {
       for (const s of SFX) {
@@ -367,7 +369,7 @@ export default function AudioController() {
 
     // 4) background music --------------------------------------------------
     duckRef.current = voice;
-    const ambTarget = AMBIENT_VOL * master * (voice ? AMBIENT_DUCK : 1);
+    const ambTarget = ambientVolRef.current * master * (voice ? AMBIENT_DUCK : 1);
     if (ambientRef.current && Math.abs(ambTarget - ambTargetRef.current) > 0.001) {
       ambTargetRef.current = ambTarget;
       fadeTo(ambientRef.current, ambTarget, 700);
@@ -464,7 +466,7 @@ export default function AudioController() {
     if (!enabledRef.current) return;
     const d = duckRef.current;
     if (ambientRef.current && !ambientRef.current.paused) {
-      const t = AMBIENT_VOL * v * (d ? AMBIENT_DUCK : 1);
+      const t = ambientVolRef.current * v * (d ? AMBIENT_DUCK : 1);
       ambientRef.current.volume = clamp(t);
       ambTargetRef.current = t;
     }
