@@ -11,6 +11,8 @@ interface WordCascadeProps {
   /** Highlight color applied to words listed in `accent`. */
   accentWords?: string[];
   id?: string;
+  /** Small time/label shown at the top of the section (e.g. "1911 — 1941"). */
+  eyebrow?: string;
   /** vh height per word — controls dwell time. */
   perWordVh?: number;
   className?: string;
@@ -26,6 +28,7 @@ export default function WordCascade({
   background = '#080808',
   accentWords = [],
   id,
+  eyebrow,
   perWordVh = 90,
   className = '',
 }: WordCascadeProps) {
@@ -76,6 +79,11 @@ export default function WordCascade({
       style={{ height: `${words.length * perWordVh + 40}vh`, background }}
     >
       <div className="sticky top-0 flex h-screen items-center justify-center overflow-hidden px-6">
+        {eyebrow && (
+          <p className="eyebrow absolute left-1/2 top-[12%] -translate-x-1/2 whitespace-nowrap text-vn-gold-antique">
+            {eyebrow}
+          </p>
+        )}
         {words.map((w, i) => {
           const accent = accentWords.includes(w);
           return (

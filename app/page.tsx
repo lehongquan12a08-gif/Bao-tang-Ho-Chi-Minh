@@ -51,6 +51,7 @@ export default function Home() {
         {/* 04 · 30 NĂM — the great search */}
         <WordCascade
           id="chapter-30-nam"
+          eyebrow="1911 — 1941 · Ba mươi năm tìm đường"
           words={['30', 'NĂM', 'MỘT HÀNH TRÌNH', 'ĐI TÌM', 'CON ĐƯỜNG', 'CHO DÂN TỘC']}
           accentWords={['30']}
           perWordVh={80}

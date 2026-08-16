@@ -10,6 +10,7 @@ import { timelineMarkers } from '@/data/timeline';
 export default function TimelineIndicator() {
   const [progress, setProgress] = useState(0);
   const [activeId, setActiveId] = useState<string>(timelineMarkers[0].id);
+  const [railHover, setRailHover] = useState(false);
   const ticking = useRef(false);
 
   useEffect(() => {
@@ -54,7 +55,13 @@ export default function TimelineIndicator() {
 
   return (
     <div className="pointer-events-none fixed right-8 top-1/2 z-[90] hidden -translate-y-1/2 lg:block">
-      <div className="relative flex flex-col items-end gap-8">
+      {/* pl-24 is a transparent hover pad so getting NEAR the rail reveals every
+          year label at once, not just the marker directly under the cursor */}
+      <div
+        className="pointer-events-auto relative flex flex-col items-end gap-8 pl-24"
+        onMouseEnter={() => setRailHover(true)}
+        onMouseLeave={() => setRailHover(false)}
+      >
         {/* base rail */}
         <div className="absolute right-[3px] top-2 h-[calc(100%-16px)] w-px bg-white/15" />
         {/* progress rail */}
@@ -79,7 +86,9 @@ export default function TimelineIndicator() {
                   'font-body text-[11px] uppercase tracking-[0.2em] transition-all duration-500',
                   active
                     ? 'text-vn-gold opacity-100'
-                    : 'text-white/30 opacity-0 group-hover:opacity-100',
+                    : railHover
+                      ? 'text-white/45 opacity-100'
+                      : 'text-white/30 opacity-0 group-hover:opacity-100',
                 ].join(' ')}
               >
                 {m.year}

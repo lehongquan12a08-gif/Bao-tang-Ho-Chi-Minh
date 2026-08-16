@@ -533,18 +533,37 @@ export default function AudioController() {
         </div>
       )}
 
-      <div className="fixed bottom-7 right-6 z-[95] flex items-center gap-3 md:bottom-9 md:right-9">
-        {/* volume slider (shows when sound is on) */}
+      <div className="group fixed bottom-7 right-6 z-[95] flex items-center gap-2 md:bottom-9 md:right-9">
+        {/* volume panel — slides in when the pointer is on the speaker area
+            (or on keyboard focus); − / slider / + */}
         {enabled && (
-          <input
-            type="range"
-            min={0}
-            max={100}
-            value={Math.round(vol * 100)}
-            onChange={(e) => onVolume(Number(e.target.value) / 100)}
-            aria-label="Âm lượng"
-            className="vol-slider hidden w-24 sm:block"
-          />
+          <div className="pointer-events-none flex translate-x-2 items-center gap-1.5 rounded-full border border-vn-gold-antique/30 bg-[rgba(8,8,8,0.6)] px-2 py-1 opacity-0 backdrop-blur-sm transition-all duration-300 group-hover:pointer-events-auto group-hover:translate-x-0 group-hover:opacity-100 focus-within:pointer-events-auto focus-within:translate-x-0 focus-within:opacity-100">
+            <button
+              type="button"
+              onClick={() => onVolume(Math.max(0, Math.round((vol - 0.1) * 100) / 100))}
+              aria-label="Giảm âm lượng"
+              className="flex h-6 w-6 items-center justify-center rounded-full text-lg leading-none text-vn-gold transition-colors hover:bg-vn-gold/15"
+            >
+              −
+            </button>
+            <input
+              type="range"
+              min={0}
+              max={100}
+              value={Math.round(vol * 100)}
+              onChange={(e) => onVolume(Number(e.target.value) / 100)}
+              aria-label="Âm lượng"
+              className="vol-slider w-20"
+            />
+            <button
+              type="button"
+              onClick={() => onVolume(Math.min(1, Math.round((vol + 0.1) * 100) / 100))}
+              aria-label="Tăng âm lượng"
+              className="flex h-6 w-6 items-center justify-center rounded-full text-lg leading-none text-vn-gold transition-colors hover:bg-vn-gold/15"
+            >
+              +
+            </button>
+          </div>
         )}
 
         {/* speaker toggle */}
