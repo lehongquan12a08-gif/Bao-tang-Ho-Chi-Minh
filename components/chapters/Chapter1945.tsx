@@ -87,7 +87,7 @@ export default function Chapter1945() {
                 src="/video/tuyen-ngon-1945.mp4"
                 poster="/images/photos/declaration-1945.webp"
                 playsInline
-                preload="auto"
+                preload="metadata"
                 controls
                 className="h-auto max-h-[62vh] w-auto max-w-[52vw] object-contain"
                 style={{ boxShadow: '0 30px 80px rgba(0,0,0,0.75)' }}

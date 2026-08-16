@@ -22,7 +22,7 @@ const DECL_SCROLL: [number, number] = [0.44, 0.92];
 // how much the supporting sounds (music + waves/wind/crowd) drop while a voice
 // (narration or the Tuyên ngôn recording) is speaking
 const AMBIENT_DUCK = 0.18;
-const SFX_DUCK = 0.22;
+const SFX_DUCK = 0.1; // supporting sounds drop hard under a voice (so it's clear)
 // how long a narration segment takes to fade out at its end (soft tail instead
 // of a hard cut) — long enough to feel gentle, not clipped
 const NARR_FADE_MS = 850;
@@ -41,9 +41,9 @@ const AMBIENT_VOL = 0.18;
 type Sfx = { id: string; src: string; vol: number; loop?: boolean; range?: [number, number]; voice?: boolean };
 const SFX: Sfx[] = [
   // supporting ambience — deliberately quiet
-  { id: 'chapter-1911', src: `/audio/sfx/ship-1911.wav?${V}`, vol: 0.16 },
-  { id: 'chapter-1941', src: `/audio/sfx/mountain-1941.wav?${V}`, vol: 0.14 },
-  { id: 'chapter-1945', src: `/audio/sfx/crowd-1945.wav?${V}`, vol: 0.09 },
+  { id: 'chapter-1911', src: `/audio/sfx/ship-1911.wav?${V}`, vol: 0.1 },
+  { id: 'chapter-1941', src: `/audio/sfx/mountain-1941.wav?${V}`, vol: 0.1 },
+  { id: 'chapter-1945', src: `/audio/sfx/crowd-1945.wav?${V}`, vol: 0.07 },
   // (Tuyên ngôn is now a <video> handled separately — see DECL_RANGE)
 ];
 

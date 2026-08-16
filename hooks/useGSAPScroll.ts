@@ -17,11 +17,32 @@ export function useSmoothScroll(): void {
     const prefersReduced = window.matchMedia(
       '(prefers-reduced-motion: reduce)'
     ).matches;
+    // Touch devices (phones / tablets): skip Lenis entirely. Its per-frame work
+    // on top of the scrubbed ScrollTriggers is the main cause of mobile jank;
+    // native scrolling is far smoother there and ScrollTrigger works fine on it.
+    const isTouch = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
 
-    if (prefersReduced) {
-      // Skip smooth scroll entirely — ScrollTrigger still works on native scroll.
+    if (prefersReduced || isTouch) {
+      // Native scroll — no Lenis. Drive ScrollTrigger from the native scroll
+      // event (Lenis used to do this) so the scrubbed animations still advance.
+      const onScroll = () => ScrollTrigger.update();
+      window.addEventListener('scroll', onScroll, { passive: true });
+      if (process.env.NODE_ENV !== 'production') {
+        (window as unknown as Record<string, unknown>).__ST = ScrollTrigger;
+      }
       ScrollTrigger.refresh();
-      return;
+      const refresh = () => ScrollTrigger.refresh();
+      window.addEventListener('load', refresh);
+      window.addEventListener('resize', refresh);
+      document.addEventListener('fullscreenchange', refresh);
+      const settle = window.setTimeout(refresh, 600);
+      return () => {
+        window.removeEventListener('scroll', onScroll);
+        window.removeEventListener('load', refresh);
+        window.removeEventListener('resize', refresh);
+        document.removeEventListener('fullscreenchange', refresh);
+        window.clearTimeout(settle);
+      };
     }
 
     const lenis = new Lenis({
