@@ -84,7 +84,7 @@ export default function Chapter1945() {
                   vẫn thấy khung hình quen thuộc */}
               <video
                 ref={setDeclVideo}
-                src="/video/tuyen-ngon-1945.mp4"
+                src="/video/tuyen-ngon-lo.mp4"
                 poster="/images/photos/declaration-1945.webp"
                 playsInline
                 preload="metadata"

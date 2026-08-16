@@ -123,7 +123,10 @@ export default function AudioController() {
     // the narration + ambient music + the Tuyên ngôn video.
     const isTouch = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
     ambientVolRef.current = isTouch ? 0.3 : AMBIENT_VOL; // quieter music on phones (Android)
-    declVideoVolRef.current = isTouch ? 0.1 : 0.2; // Tuyên ngôn video level
+    // the video FILE is now baked to 15% (iOS-safe, no Web Audio). element.volume
+    // still trims it further where it works (desktop/Android); iOS plays the
+    // baked 15% directly.
+    declVideoVolRef.current = isTouch ? 0.6 : 1.5;
     const m = new Map<string, HTMLAudioElement>();
     if (!isTouch) {
       for (const s of SFX) {
