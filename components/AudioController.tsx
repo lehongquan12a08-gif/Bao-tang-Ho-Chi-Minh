@@ -112,13 +112,20 @@ export default function AudioController() {
     amb.preload = 'auto';
     ambientRef.current = amb;
 
+    // Supporting SFX (ship/waves, mountain wind, crowd) are atmosphere only. On
+    // phones they keep unbalancing against the (quieter, less reliable) mobile
+    // narration — "tiếng sông" too loud. Skip them entirely on touch: keep just
+    // the narration + ambient music + the Tuyên ngôn video.
+    const isTouch = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
     const m = new Map<string, HTMLAudioElement>();
-    for (const s of SFX) {
-      const a = new Audio(s.src);
-      a.loop = s.loop !== false;
-      a.volume = 0;
-      a.preload = 'none';
-      m.set(s.src, a);
+    if (!isTouch) {
+      for (const s of SFX) {
+        const a = new Audio(s.src);
+        a.loop = s.loop !== false;
+        a.volume = 0;
+        a.preload = 'none';
+        m.set(s.src, a);
+      }
     }
     sfxRef.current = m;
 
